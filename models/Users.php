@@ -50,8 +50,9 @@ class Users extends ActiveRecord
           [['username', 'first_name', 'last_name', 'password'], 'required',  'on' => self::SCENARIO_CREATE],
           ['username', 'unique',  'on' => self::SCENARIO_CREATE],
           [['id', 'username', 'first_name', 'last_name'], 'required',  'on' => self::SCENARIO_UPDATE],
-          ['username', 'unique',  'on' => self::SCENARIO_UPDATE],
-          [[ 'username', 'first_name', 'last_name', 'password'], 'required',  'on' => self::SCENARIO_UPDATE],
+          ['username', 'unique', 'when' => function ($model, $attribute) {
+              return $model->{$attribute} !== $model->getOldAttribute($attribute);
+          }, 'on' => self::SCENARIO_UPDATE],
           [['id'], 'required',  'on' => self::SCENARIO_DELETE],
       ];
     }

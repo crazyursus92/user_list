@@ -11,6 +11,7 @@ namespace app\controllers\user;
  */
 use app\models\Users;
 use Yii;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 
 class BaseController implements UserInterface
@@ -39,98 +40,9 @@ class BaseController implements UserInterface
         } else {
             return [
                 'status' => 'error',
-                'response' => $user
+                'response' => $user->errors
             ];
         }
-    }
-
-    public function delete()
-    {
-
-        $request = Yii::$app->request;
-        $id = $request->post('id');
-        if ($id !== $this->current_user->id) {
-            $user = Users::findOne($id);
-            $user->scenario = Users::SCENARIO_DELETE;
-            if ($user->validate()) {
-                $user->delete();
-                return [
-                    'status' => 'success',
-                    'response' => true
-                ];
-            } else {
-                return [
-                    'status' => 'error',
-                    'response' => $user->errors
-                ];
-            }
-        }
-    }
-
-    public function getById()
-    {
-        $request = Yii::$app->request;
-        $id = $request->get('id');
-        $user = Users::findOne($id);
-        if ($user && $user->id) {
-            return [
-                'status' => 'success',
-                'response' => $user
-            ];
-        } else {
-            return [
-                'status' => 'error',
-                'response' => 'User not found'
-            ];
-        }
-
-    }
-
-    public function getList()
-    {
-        $result = [];
-        $request = Yii::$app->request;
-        $limit = $request->get('limit');
-        $offset = $request->get('offset');
-        $result['users'] = Users::find()->limit($limit)->offset($offset)->orderBy('id')->all();
-        $result['count'] = Users::find()->count();
-        return [
-            'status' => 'success',
-            'response' => $result
-        ];
-    }
-
-    public function login()
-    {
-
-        $request = Yii::$app->request;
-        $user = Users::findOne([
-            'username' => $request->post('username')
-        ]);
-        var_dump($user);
-        if (!$user) {
-            /**
-             * @todo Подобрать правильный код ощибки
-             */
-            throw new NotFoundHttpException("User not found");
-        }
-        if($user->password !== $request->post('password')){
-            throw new NotFoundHttpException("Password fail");
-        }
-        $_SESSION['user_id'] = $user->id;
-        return [
-            'status' => 'success',
-            'response' => $user
-        ];
-    }
-
-    public function logout()
-    {
-        $_SESSION['user_id'] = null;
-        return [
-            'status' => 'success',
-            'response' => true
-        ];
     }
 
     /**
@@ -140,7 +52,13 @@ class BaseController implements UserInterface
     {
         $request = Yii::$app->request;
         $id = $request->post('id');
+        if(!$id){
+            throw new BadRequestHttpException("user id is not define");
+        }
         $user = Users::findOne($id);
+        if(!$user){
+            throw new NotFoundHttpException("User not found");
+        }
         foreach ($request->post() as $key => $value){
             if($value){
                 $user->setAttribute($key, $value);
@@ -162,5 +80,105 @@ class BaseController implements UserInterface
         }
 
     }
+
+    public function delete()
+    {
+
+        $request = Yii::$app->request;
+        $id = $request->post('id');
+        if(!$id){
+            throw new BadRequestHttpException("user id is not define");
+        }
+        if (intval($id) === intval($this->current_user->id)) {
+            throw new BadRequestHttpException("You cannot remove yourself");
+        }
+        $user = Users::findOne($id);
+        if(!$user){
+            throw new NotFoundHttpException("User not found");
+        }
+        $user->scenario = Users::SCENARIO_DELETE;
+        if ($user->validate()) {
+            $user->delete();
+            return [
+                'status' => 'success',
+                'response' => true
+            ];
+        } else {
+            return [
+                'status' => 'error',
+                'response' => $user->errors
+            ];
+        }
+    }
+
+    public function getById()
+    {
+        $request = Yii::$app->request;
+        $id = $request->get('id');
+        if(!$id){
+            throw new BadRequestHttpException("user id is not define");
+        }
+        $user = Users::findOne($id);
+        if(!$user){
+            throw new NotFoundHttpException("User not found");
+        }
+        if ($user && $user->id) {
+            return [
+                'status' => 'success',
+                'response' => $user
+            ];
+        }
+
+    }
+
+    public function getList()
+    {
+        $result = [];
+        $request = Yii::$app->request;
+        $limit = $request->get('limit');
+        $offset = $request->get('offset');
+        $result['users'] = Users::find()->limit($limit)->offset($offset)->orderBy('id')->all();
+        $result['count'] = Users::find()->count();
+        return [
+            'status' => 'success',
+            'response' => $result
+        ];
+    }
+
+    /**
+     * @return array
+     * @throws NotFoundHttpException
+     */
+    public function login()
+    {
+
+        $request = Yii::$app->request;
+        $user = Users::findOne([
+            'username' => $request->post('username')
+        ]);
+
+        if (!$user) {
+            throw new NotFoundHttpException("User not found");
+        }
+        if($user->password !== $request->post('password')){
+            throw new NotFoundHttpException("Password fail");
+        }
+        $_SESSION['user_id'] = $user->id;
+        return [
+            'status' => 'success',
+            'response' => $user
+        ];
+    }
+
+    public function logout()
+    {
+        $_SESSION['user_id'] = null;
+        return [
+            'status' => 'success',
+            'response' => true
+        ];
+    }
+
+
 
 }
