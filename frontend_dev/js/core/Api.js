@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import Toast from './../modeuls/Toast'
+import Toast from './../helpers/Toast';
 
 export default class Api {
 	/**

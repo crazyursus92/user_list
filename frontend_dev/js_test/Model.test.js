@@ -1,4 +1,4 @@
-import Model from './../model/Model';
+import Model from './../js/model/Model';
 
 describe('Model', () => {
 	describe('constructor', () => {

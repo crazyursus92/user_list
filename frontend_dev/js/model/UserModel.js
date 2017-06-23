@@ -11,22 +11,18 @@ class UserModel extends Model {
 
 	getList(offset = 0, limit = 10) {
 		let url = '/api/user/list/' + offset + '/' + limit;
-		return this.api.get(url).then(function (data) {
-			return data.response;
-		}, null).then(this._changeCurrentUser.bind(this));
+		return this.api.get(url).then(this._changeCurrentUser.bind(this));
 	}
 
 	get(id) {
-		return this.api.get(`/api/user/get/${id}`).then((data) => {
-			return data.response;
-		}).then(this._changeCurrentUser.bind(this));
+		return this.api.get(`/api/user/get/${id}`).then(this._changeCurrentUser.bind(this));
 	}
 
 	login(username, password) {
 		return this.api.post('/api/user/login', {
 			username: username,
 			password: password
-		}).then(this._changeCurrentUser.bind(this));
+		});
 	}
 
 	getCurrentUser() {
@@ -41,10 +37,6 @@ class UserModel extends Model {
 			return this._current_user_promise;
 		} else if (!this._current_user.id) {
 			return this._current_user_promise.then(() => {
-				return this._current_user;
-			});
-		} else {
-			return Promise.resolve().then(() => {
 				return this._current_user;
 			});
 		}

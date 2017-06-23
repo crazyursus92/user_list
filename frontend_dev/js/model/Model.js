@@ -1,5 +1,5 @@
 
-import Api from './../modeuls/Api';
+import Api from './../core/Api';
 
 export default class Model {
 	constructor(){

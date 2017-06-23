@@ -1,6 +1,8 @@
 import toastr from './../vendor/toastr.min';
 
 
+
+
 toastr.options = {
 	"closeButton": false,
 	"debug": false,
@@ -18,6 +20,5 @@ toastr.options = {
 	"showMethod": "fadeIn",
 	"hideMethod": "fadeOut"
 };
-
 
 export default toastr;

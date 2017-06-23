@@ -2,8 +2,7 @@
  * Created by ursus on 21.06.17.
  */
 export  default  class User {
-	constructor(data){
-		data = data || {};
+	constructor(data = {}){
 		this.id = !isNaN(+data.id) ? +data.id : 0;
 		this.first_name = data.first_name;
 		this.last_name = data.last_name;
@@ -17,7 +16,7 @@ export  default  class User {
 	}
 
 	isUser(){
-		return this.type === 1;
+		return this.type === 2;
 	}
 
 	isGuest(){
@@ -26,9 +25,9 @@ export  default  class User {
 
 	/**
 	 *
-	 * @param {User} user
+	 * @param {User|Object} user
 	 */
-	isEquals(user){
-		return this.id === user.id && this.type === user.type;
+	isEquals(user = {}){
+		return this.id && this.id === user.id && this.type === user.type;
 	}
 }
