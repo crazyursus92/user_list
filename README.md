@@ -35,7 +35,7 @@ Install
 
 
 ```bash
-chmod 0777 -R ./
+    chmod 0777 -R ./
 ```
 
 10) Заходим на [http://user_list/](http://user_list/)
