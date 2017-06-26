@@ -31,8 +31,10 @@ export default class UserPage extends Component {
 		userModel.get(id).then((data) => {
 			if(data.status === 'success') {
 				this.setState({user: new User(data.response), errors: {}});
-			}else{
+			}else if(data.code === 200){
 				this.setState({errors: data.response});
+			}else{
+				this.props.history.push('/');
 			}
 		});
 	}
@@ -49,7 +51,6 @@ export default class UserPage extends Component {
 			this.next_step_user_id = new_id;
 			if(new_id === 'create') {
 				let user = new User({});
-
 				this.setState({
 					user: user
 				});
@@ -110,12 +111,14 @@ export default class UserPage extends Component {
 				});
 				toast.success('User updated');
 
-			} else if (data.status === 'errors') {
+			} else if (data.status === 'errors' && data.code === 200) {
 				let errors = this.state.errors;
 				_.extend(errors, data.response);
 				this.setState({
 					errors: errors
 				});
+			}else{
+				this.props.history.push('/');
 			}
 		});
 	}
@@ -134,6 +137,7 @@ export default class UserPage extends Component {
 			}
 		});
 	}
+
 	_validatePassword(password, retypePassword) {
 		let state;
 		if (this.state.user.id) {

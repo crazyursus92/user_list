@@ -3,8 +3,9 @@ import userModel from "./../model/UserModel";
 import User from "./../model/User";
 import UserControlsManager from "./UserControlsManager";
 import UserControlsUser from "./UserControlsUser";
+import MountedComponent from './MountedComponent';
 
-export  default  class UserControls extends Component {
+export  default  class UserControls extends MountedComponent {
 	constructor() {
 		super();
 		this.state = {
@@ -20,9 +21,15 @@ export  default  class UserControls extends Component {
 
 	_getCurrentUser() {
 		userModel.getCurrentUser().then((user) => {
-			this.setState({
-				current_user: user
-			});
+			if(this.isMounted) {
+				this.setState({
+					current_user: user
+				});
+			}else{
+				this.state = {
+					current_user: user
+				};
+			}
 		});
 	}
 

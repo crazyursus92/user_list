@@ -1,10 +1,11 @@
 import React, {Component} from "react";
 import userModel from "./../model/UserModel";
 import User from "./../model/User";
+import MountedComponent from './MountedComponent';
 import UserToolbarUser from "./UserToolbarUser";
 import UserToolbarManager from "./UserToolbarManger";
 
-export default class UserToolbar extends Component {
+export default class UserToolbar extends MountedComponent {
 
 	constructor() {
 		super();
@@ -17,14 +18,19 @@ export default class UserToolbar extends Component {
 
 	_listener(){
 		userModel.on('current-user-change', this._getCurrentUser.bind(this));
-
 	}
 
 	_getCurrentUser() {
 		userModel.getCurrentUser().then((user) => {
-			this.setState({
-				current_user: user
-			});
+			if(this.isMounted) {
+				this.setState({
+					current_user: user
+				});
+			}else{
+				this.state = {
+					current_user: user
+				};
+			}
 		});
 	}
 
