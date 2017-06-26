@@ -33,10 +33,9 @@ Install
 8) Перезапуск apache
 9) В консоли выставляем права
 
+
 ```bash
-chmod 0777 ./runtime
-chmod 0777 ./web
-chmod 0755 ./yii
+chmod 0777 -R ./
 ```
 
 10) Заходим на [http://user_list/](http://user_list/)

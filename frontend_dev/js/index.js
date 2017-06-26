@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './components/App';
+import userModel from './model/UserModel';
 
 
-
-ReactDOM.render(<App />, document.getElementById('root'));
+userModel.getCurrentUser().then(() => {
+	ReactDOM.render(<App />, document.getElementById('root'));
+});
 
 
