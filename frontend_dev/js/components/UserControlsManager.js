@@ -2,25 +2,23 @@ import React, {Component} from "react";
 import {Link} from "react-router-dom";
 import userModel from "./../model/UserModel";
 import toast from './../helpers/Toast';
-import MountedComponent from './MountedComponent';
 
-export default class UserControlsManager extends MountedComponent {
+
+export default class UserControlsManager extends Component {
 	constructor() {
 		super();
 		this.state = {
 			current_user: {}
 		};
 
+
+	}
+
+	componentDidMount(){
 		userModel.getCurrentUser().then((user) => {
-			if(this.isMounted) {
 				this.setState({
 					current_user: user
 				})
-			}else{
-				this.state = {
-					current_user: user
-				};
-			}
 		});
 	}
 

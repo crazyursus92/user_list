@@ -19558,10 +19558,6 @@ var _User = __webpack_require__(57);
 
 var _User2 = _interopRequireDefault(_User);
 
-var _MountedComponent2 = __webpack_require__(376);
-
-var _MountedComponent3 = _interopRequireDefault(_MountedComponent2);
-
 var _UserToolbarUser = __webpack_require__(182);
 
 var _UserToolbarUser2 = _interopRequireDefault(_UserToolbarUser);
@@ -19572,8 +19568,8 @@ var _UserToolbarManger2 = _interopRequireDefault(_UserToolbarManger);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var UserToolbar = function (_MountedComponent) {
-	(0, _inherits3.default)(UserToolbar, _MountedComponent);
+var UserToolbar = function (_Component) {
+	(0, _inherits3.default)(UserToolbar, _Component);
 
 	function UserToolbar() {
 		(0, _classCallCheck3.default)(this, UserToolbar);
@@ -19583,12 +19579,17 @@ var UserToolbar = function (_MountedComponent) {
 		_this.state = {
 			current_user: new _User2.default({})
 		};
-		_this._getCurrentUser();
-		_this._listener();
+
 		return _this;
 	}
 
 	(0, _createClass3.default)(UserToolbar, [{
+		key: "componentDidMount",
+		value: function componentDidMount() {
+			this._getCurrentUser();
+			this._listener();
+		}
+	}, {
 		key: "_listener",
 		value: function _listener() {
 			_UserModel2.default.on('current-user-change', this._getCurrentUser.bind(this));
@@ -19599,15 +19600,9 @@ var UserToolbar = function (_MountedComponent) {
 			var _this2 = this;
 
 			_UserModel2.default.getCurrentUser().then(function (user) {
-				if (_this2.isMounted) {
-					_this2.setState({
-						current_user: user
-					});
-				} else {
-					_this2.state = {
-						current_user: user
-					};
-				}
+				_this2.setState({
+					current_user: user
+				});
 			});
 		}
 	}, {
@@ -19637,7 +19632,7 @@ var UserToolbar = function (_MountedComponent) {
 		}
 	}]);
 	return UserToolbar;
-}(_MountedComponent3.default);
+}(_react.Component);
 
 exports.default = UserToolbar;
 
@@ -19680,14 +19675,10 @@ var _UserModel = __webpack_require__(21);
 
 var _UserModel2 = _interopRequireDefault(_UserModel);
 
-var _MountedComponent2 = __webpack_require__(376);
-
-var _MountedComponent3 = _interopRequireDefault(_MountedComponent2);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var UserToolbarPanel = function (_MountedComponent) {
-	(0, _inherits3.default)(UserToolbarPanel, _MountedComponent);
+var UserToolbarPanel = function (_Component) {
+	(0, _inherits3.default)(UserToolbarPanel, _Component);
 
 	function UserToolbarPanel(props) {
 		(0, _classCallCheck3.default)(this, UserToolbarPanel);
@@ -19697,21 +19688,21 @@ var UserToolbarPanel = function (_MountedComponent) {
 		_this.state = {
 			current_user: {}
 		};
-		_UserModel2.default.getCurrentUser().then(function (user) {
-			if (_this.isMounted) {
-				_this.setState({
-					current_user: user
-				});
-			} else {
-				_this.state = {
-					current_user: user
-				};
-			}
-		});
 		return _this;
 	}
 
 	(0, _createClass3.default)(UserToolbarPanel, [{
+		key: "componentDidMount",
+		value: function componentDidMount() {
+			var _this2 = this;
+
+			_UserModel2.default.getCurrentUser().then(function (user) {
+				_this2.setState({
+					current_user: user
+				});
+			});
+		}
+	}, {
 		key: "click",
 		value: function click(e) {
 			e.preventDefault();
@@ -19734,7 +19725,7 @@ var UserToolbarPanel = function (_MountedComponent) {
 		}
 	}]);
 	return UserToolbarPanel;
-}(_MountedComponent3.default);
+}(_react.Component);
 
 exports.default = UserToolbarPanel;
 
@@ -25597,14 +25588,10 @@ var _UserControlsUser = __webpack_require__(178);
 
 var _UserControlsUser2 = _interopRequireDefault(_UserControlsUser);
 
-var _MountedComponent2 = __webpack_require__(376);
-
-var _MountedComponent3 = _interopRequireDefault(_MountedComponent2);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var UserControls = function (_MountedComponent) {
-	(0, _inherits3.default)(UserControls, _MountedComponent);
+var UserControls = function (_Component) {
+	(0, _inherits3.default)(UserControls, _Component);
 
 	function UserControls() {
 		(0, _classCallCheck3.default)(this, UserControls);
@@ -25614,12 +25601,17 @@ var UserControls = function (_MountedComponent) {
 		_this.state = {
 			current_user: new _User2.default({})
 		};
-		_this._getCurrentUser();
-		_this._listener();
+
 		return _this;
 	}
 
 	(0, _createClass3.default)(UserControls, [{
+		key: "componentDidMount",
+		value: function componentDidMount() {
+			this._getCurrentUser();
+			this._listener();
+		}
+	}, {
 		key: "_listener",
 		value: function _listener() {
 			_UserModel2.default.on('current-user-change', this._getCurrentUser.bind(this));
@@ -25630,15 +25622,9 @@ var UserControls = function (_MountedComponent) {
 			var _this2 = this;
 
 			_UserModel2.default.getCurrentUser().then(function (user) {
-				if (_this2.isMounted) {
-					_this2.setState({
-						current_user: user
-					});
-				} else {
-					_this2.state = {
-						current_user: user
-					};
-				}
+				_this2.setState({
+					current_user: user
+				});
 			});
 		}
 	}, {
@@ -25656,7 +25642,7 @@ var UserControls = function (_MountedComponent) {
 		}
 	}]);
 	return UserControls;
-}(_MountedComponent3.default);
+}(_react.Component);
 
 exports.default = UserControls;
 
@@ -25705,14 +25691,10 @@ var _Toast = __webpack_require__(56);
 
 var _Toast2 = _interopRequireDefault(_Toast);
 
-var _MountedComponent2 = __webpack_require__(376);
-
-var _MountedComponent3 = _interopRequireDefault(_MountedComponent2);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var UserControlsManager = function (_MountedComponent) {
-	(0, _inherits3.default)(UserControlsManager, _MountedComponent);
+var UserControlsManager = function (_Component) {
+	(0, _inherits3.default)(UserControlsManager, _Component);
 
 	function UserControlsManager() {
 		(0, _classCallCheck3.default)(this, UserControlsManager);
@@ -25723,31 +25705,31 @@ var UserControlsManager = function (_MountedComponent) {
 			current_user: {}
 		};
 
-		_UserModel2.default.getCurrentUser().then(function (user) {
-			if (_this.isMounted) {
-				_this.setState({
-					current_user: user
-				});
-			} else {
-				_this.state = {
-					current_user: user
-				};
-			}
-		});
 		return _this;
 	}
 
-	/**
-  *
-  * @param e
-  * @private
-  */
-
-
 	(0, _createClass3.default)(UserControlsManager, [{
+		key: "componentDidMount",
+		value: function componentDidMount() {
+			var _this2 = this;
+
+			_UserModel2.default.getCurrentUser().then(function (user) {
+				_this2.setState({
+					current_user: user
+				});
+			});
+		}
+
+		/**
+   *
+   * @param e
+   * @private
+   */
+
+	}, {
 		key: "_delete",
 		value: function _delete(e) {
-			var _this2 = this;
+			var _this3 = this;
 
 			e.preventDefault();
 			if (confirm('Are you sure you want to delete the user?')) {
@@ -25756,10 +25738,10 @@ var UserControlsManager = function (_MountedComponent) {
 						/**
        * Кидаем event для того что бы user удалился из списка
        */
-						_UserModel2.default.trigger('users-update', _this2.props.id);
+						_UserModel2.default.trigger('users-update', _this3.props.id);
 						_Toast2.default.success('User deleted');
 					} else if (data && data.status === 'error' && data.code === 404) {
-						_UserModel2.default.trigger('users-update', _this2.props.id);
+						_UserModel2.default.trigger('users-update', _this3.props.id);
 					}
 				});
 			}
@@ -25780,7 +25762,7 @@ var UserControlsManager = function (_MountedComponent) {
 		}
 	}]);
 	return UserControlsManager;
-}(_MountedComponent3.default);
+}(_react.Component);
 
 exports.default = UserControlsManager;
 
@@ -25931,14 +25913,33 @@ var UserList = function (_Component) {
 
 			_UserModel2.default.getList((this.state.page - 1) * this.limit).then(function (data) {
 				if (data.status === 'success') {
-					_this2.setState({
-						users: data.response.users,
-						count: +data.response.count
-					});
+					if (_this2._validateResponse(data.response)) {
+						_this2.setState({
+							users: data.response.users,
+							count: +data.response.count
+						});
+					}
 				}
 			});
 		}
-
+	}, {
+		key: "_validateResponse",
+		value: function _validateResponse(data) {
+			if (!data.users.length) {
+				var pages = this._pages(+data.count);
+				this.setState({
+					page: pages
+				});
+				this.props.history.push('/list/' + pages);
+				return false;
+			}
+			return true;
+		}
+	}, {
+		key: "_pages",
+		value: function _pages(count) {
+			return Math.ceil(count / this.limit);
+		}
 		/**
    * Генерится массив страниц (не нашел как можно сделать for для диапазона в JSX)
    * @return {Array}
@@ -25948,7 +25949,7 @@ var UserList = function (_Component) {
 	}, {
 		key: "_pager",
 		value: function _pager() {
-			var pages = Math.ceil(this.state.count / this.limit);
+			var pages = this._pages(this.state.count);
 			var pages_array = [];
 			for (var i = 1; i <= pages; i++) {
 				pages_array.push(i);
@@ -26024,10 +26025,12 @@ var UserList = function (_Component) {
 							this._pager().map(function (page) {
 								return _react2.default.createElement(
 									"li",
-									{ "data-page": page, className: page === _this3.state.page ? 'active' : '', key: page },
+									{ "data-page": page, className: page === _this3.state.page ? 'active' : '',
+										key: page },
 									_react2.default.createElement(
 										_reactRouterDom.Link,
-										{ to: "/list/" + page, onClick: _this3._changePage.bind(_this3), replace: true },
+										{ to: "/list/" + page, onClick: _this3._changePage.bind(_this3),
+											replace: true },
 										page
 									)
 								);
@@ -26233,11 +26236,9 @@ var UserPage = function (_Component) {
 						errors: {}
 					});
 					_Toast2.default.success('User updated');
-				} else if (data.status === 'errors' && data.code === 200) {
-					var errors = _this4.state.errors;
-					_underscore2.default.extend(errors, data.response);
+				} else if (data.status === 'error' && data.code === 200) {
 					_this4.setState({
-						errors: errors
+						errors: data.response
 					});
 				} else {
 					_this4.props.history.push('/');
@@ -26250,7 +26251,7 @@ var UserPage = function (_Component) {
 			var _this5 = this;
 
 			_UserModel2.default.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then(function (data) {
-				if (data.status === 'error') {
+				if (data.status === 'error' && data.status === 200) {
 					_this5.setState({
 						errors: data.response
 					});
@@ -26608,6 +26609,7 @@ var Api = function () {
 				_jquery2.default.get(url, params).done(function (data) {
 					resolve(data);
 				}).fail(function (data, status, text) {
+					data.responseJSON = data.responseJSON || { response: text };
 					_Toast2.default.error(data.responseJSON.response);
 					reject(data.responseJSON);
 				});
@@ -26632,6 +26634,7 @@ var Api = function () {
 				_jquery2.default.post(url, params).done(function (data) {
 					resolve(data);
 				}).fail(function (data, status, text) {
+					data.responseJSON = data.responseJSON || { response: text };
 					_Toast2.default.error(data.responseJSON.response);
 					reject(data.responseJSON);
 				});
@@ -44296,71 +44299,6 @@ module.exports = function() {
 __webpack_require__(171);
 module.exports = __webpack_require__(170);
 
-
-/***/ }),
-/* 376 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _getPrototypeOf = __webpack_require__(14);
-
-var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
-
-var _classCallCheck2 = __webpack_require__(8);
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = __webpack_require__(9);
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
-var _possibleConstructorReturn2 = __webpack_require__(16);
-
-var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
-
-var _inherits2 = __webpack_require__(15);
-
-var _inherits3 = _interopRequireDefault(_inherits2);
-
-var _react = __webpack_require__(2);
-
-var _react2 = _interopRequireDefault(_react);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var MountedComponent = function (_Component) {
-	(0, _inherits3.default)(MountedComponent, _Component);
-
-	function MountedComponent(props) {
-		(0, _classCallCheck3.default)(this, MountedComponent);
-
-		var _this = (0, _possibleConstructorReturn3.default)(this, (MountedComponent.__proto__ || (0, _getPrototypeOf2.default)(MountedComponent)).call(this, props));
-
-		_this.isMounted = false;
-		return _this;
-	}
-
-	(0, _createClass3.default)(MountedComponent, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			this.isMounted = true;
-		}
-	}, {
-		key: "componentWillUnmount",
-		value: function componentWillUnmount() {
-			this.isMounted = false;
-		}
-	}]);
-	return MountedComponent;
-}(_react.Component);
-
-exports.default = MountedComponent;
 
 /***/ })
 /******/ ]);

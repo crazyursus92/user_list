@@ -14,6 +14,7 @@ export default class Api {
 			$.get(url, params).done((data) => {
 				resolve(data);
 			}).fail((data, status, text) => {
+				data.responseJSON = data.responseJSON || {response: text};
 				Toast.error(data.responseJSON.response);
 				reject(data.responseJSON);
 
@@ -33,6 +34,7 @@ export default class Api {
 			$.post(url, params).done((data) => {
 				resolve(data);
 			}).fail((data, status, text) => {
+				data.responseJSON = data.responseJSON || {response: text};
 				Toast.error(data.responseJSON.response);
 				reject(data.responseJSON);
 

@@ -111,11 +111,9 @@ export default class UserPage extends Component {
 				});
 				toast.success('User updated');
 
-			} else if (data.status === 'errors' && data.code === 200) {
-				let errors = this.state.errors;
-				_.extend(errors, data.response);
+			} else if (data.status === 'error' && data.code === 200) {
 				this.setState({
-					errors: errors
+					errors: data.response
 				});
 			}else{
 				this.props.history.push('/');
@@ -124,7 +122,7 @@ export default class UserPage extends Component {
 	}
 	_create (values){
 		userModel.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((data) => {
-			if(data.status === 'error'){
+			if(data.status === 'error' && data.status === 200){
 				this.setState({
 					errors: data.response
 				});

@@ -1,26 +1,20 @@
-import React from "react";
+import React, {Component} from "react";
 import userModel from "./../model/UserModel";
-import MountedComponent from './MountedComponent';
 
-export default class UserToolbarPanel extends MountedComponent {
+export default class UserToolbarPanel extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			current_user: {}
 		};
+	}
+	componentDidMount(){
 		userModel.getCurrentUser().then((user) => {
-			if(this.isMounted) {
-				this.setState({
-					current_user: user
-				});
-			}else{
-				this.state = {
-					current_user: user
-				};
-			}
+			this.setState({
+				current_user: user
+			});
 		});
 	}
-
 	click(e) {
 		e.preventDefault();
 	}
