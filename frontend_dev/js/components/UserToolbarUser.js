@@ -4,7 +4,6 @@ import UserToolbarPanel from "./UserToolbarPanel";
 
 export default class UserToolbarUser extends Component {
 
-
 	render() {
 		return (
 			<div>

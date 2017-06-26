@@ -1,8 +1,8 @@
 import React, {Component} from "react";
-import userModel from './../model/UserModel';
+import userModel from "./../model/UserModel";
 
 export default class UserToolbarPanel extends Component {
-	constructor(){
+	constructor() {
 		super();
 		this.state = {
 			current_user: {}
@@ -13,12 +13,16 @@ export default class UserToolbarPanel extends Component {
 			});
 		});
 	}
-	click (e){
+
+	click(e) {
 		e.preventDefault();
 	}
+
 	render() {
 		return (
-			<li ><a onClick={this.click.bind(this)}>{this.state.current_user.first_name} {this.state.current_user.last_name}</a></li>
+			<li ><a
+				onClick={this.click.bind(this)}>{this.state.current_user.first_name} {this.state.current_user.last_name}</a>
+			</li>
 		)
 	}
 }

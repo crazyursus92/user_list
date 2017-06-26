@@ -10,6 +10,9 @@ namespace app\controllers;
 
 
 
+use Yii;
+use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use app\models\Users;
 use yii\base\Module;
@@ -33,10 +36,15 @@ class UserController extends Controller
     }
 
     private function stateInit(){
-        $current_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+        $current_user_id = isset($_SESSION['user_id']) && $_SESSION['user_id'] ? $_SESSION['user_id'] : null;
 
         if(!is_null($current_user_id)){
             $this->current_user = Users::findOne($current_user_id);
+            if(!$this->current_user){
+                $_SESSION['user_id'] = null;
+                $this->state = new user\GuestController();
+                throw new BadRequestHttpException('user deleted');
+            }
             if($this->current_user->type === Users::TYPE_ADMIN){
                 $this->state = new user\ManagerController();
             }elseif ($this->current_user->type === Users::TYPE_USER){
@@ -52,7 +60,11 @@ class UserController extends Controller
     }
 
     public function actionLogout(){
-        return $this->response($this->state->logout());
+        $result = $this->state->logout();
+        if($result['status'] === 'success'){
+            $this->current_user = new user\GuestController();
+        }
+        return $this->response($result);
     }
 
     public function actionCreate(){
@@ -79,14 +91,26 @@ class UserController extends Controller
         return $this->response(['status' => 'success', 'response' => $this->current_user]);
     }
 
-    private function response($data){
+    private function response($data, $code = 200){
         \Yii::$app->response->format = Response::FORMAT_JSON;
         return [
             'response' => $data['response'],
             'user' => $this->current_user,
-            'code' => 200,
+            'code' => $code,
             'status' => $data['status']
         ];
+    }
+
+    public function actionError(){
+
+        if (($exception = Yii::$app->getErrorHandler()->exception) === null) {
+            $exception = new NotFoundHttpException(Yii::t('yii', 'Page not found.'));
+        }
+        $message = $exception->getMessage();
+        if(!$message){
+            $message = $exception->getName();
+        }
+        return $this->response(['response'=> $message, 'status' => 'error'], $exception->statusCode);
     }
 
 }

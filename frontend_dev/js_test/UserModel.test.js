@@ -220,6 +220,7 @@ describe('delete', () => {
 
 	it('change current user trigger event', (done) => {
 		userModel.trigger = jest.fn(userModel.trigger);
+		ajax_mock.done({});
 		userModel.delete(1).then(() => {
 			expect(userModel.trigger.mock.calls.length).toBe(1);
 			expect(userModel.trigger.mock.calls[0][0]).toBe('current-user-change');

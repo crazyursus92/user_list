@@ -4,13 +4,12 @@ import {Form} from "formsy-react";
 import {Checkbox,  Input} from "formsy-react-components";
 import UserToolbar from "./UserToolbar";
 import userModel from "./../model/UserModel";
-import toast from './Toast';
+import toast from './../helpers/Toast';
 import User from './../model/User';
 
 export default class UserPage extends Component {
 	constructor(route_data) {
 		super();
-
 		this.state = {
 			user: {},
 			errors: {}
@@ -19,21 +18,36 @@ export default class UserPage extends Component {
 		this.reset_form = false;
 		if (route_data.match.params.id && route_data.match.params.id !== 'create') {
 			let id = +route_data.match.params.id;
+			this.next_step_user_id = id;
 			this.state = {
 				user: {},
 				errors: {}
 			};
-			userModel.get(id).then((data) => {
-				this.setState({user: data});
-			});
-
+			this._getUser(id);
 		}
 	}
+
+	_getUser (id){
+		userModel.get(id).then((data) => {
+			if(data.status === 'success') {
+				this.setState({user: data.response, errors: {}});
+			}else{
+				this.setState({errors: data.response});
+			}
+		});
+	}
+
+	/**
+	 * Обновляем текущий user_id и запрашиваем этого пользователя если  новый user_id отличается от текущего
+	 * @param nextProps
+	 * @param nextState
+	 */
 	componentWillUpdate(nextProps, nextState){
 		window.uprefs = this.refs;
-		if ( nextProps.match.params.id && nextProps.match.params.id !== this.next_step_user_id) {
-			this.next_step_user_id = nextProps.match.params.id;
-			if(nextProps.match.params.id === 'create') {
+		let new_id = !isNaN(+nextProps.match.params.id) ? +nextProps.match.params.id : nextProps.match.params.id;
+		if ( nextProps.match.params.id && new_id !== this.next_step_user_id) {
+			this.next_step_user_id = new_id;
+			if(new_id === 'create') {
 				let user = new User({});
 
 				this.setState({
@@ -42,63 +56,84 @@ export default class UserPage extends Component {
 				this.reset_form =  true;
 
 			}else{
-				userModel.get(+nextProps.match.params.id).then((data) => {
-					this.setState({user: data});
-				});
+				this._getUser(new_id);
 			}
 		}
 	}
+
+	/**
+	 * Топор на отчистку формы если у мы переходим со страницы пользователя на страницу создания пользователя
+	 */
 	componentDidUpdate(){
 		if(this.reset_form && this.refs){
 			this.reset_form = false;
 			setTimeout(() => {
-				this.refs.username.setValue('');
-				this.refs.password.setValue('');
-				this.refs.retype_password.setValue('');
-				this.refs.first_name.setValue('');
-				this.refs.last_name.setValue('');
-				this.refs.type.setValue(false);
-				this.refs.form.reset({});
+				if(this.state.user.id === 'create') {
+					this.refs.username.setValue('');
+					this.refs.password.setValue('');
+					this.refs.retype_password.setValue('');
+					this.refs.first_name.setValue('');
+					this.refs.last_name.setValue('');
+					this.refs.type.setValue(false);
+					this.refs.form.reset({});
+				}
 			}, 100);
 		}
 	}
+
 	_submit(values, reset, invalid) {
-		console.log(arguments);
+
 		let validate_password = this._validatePassword(values.password, values.retype_password);
+
 		if(_.isString(validate_password)){
 			invalid({
-				password: validate_password
+				retype_password: validate_password
 			});
 			return;
 		}
+
 		if (validate_password) {
 			values.type = values.type ? 1 : 2;
 			if (this.state.user.id) {
-				userModel.update(this.state.user.id, values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((data) => {
-						if (data.status === 'success') {
-							this.setState({
-								user: data.response,
-								errors: {}
-							});
-							toast.success('User updated');
-
-						} else if (data.status === 'errors') {
-							let errors = this.state.errors;
-							_.extend(errors, data.response);
-							this.setState({
-								errors: errors
-							});
-						}
-				});
+				this._update(values);
 			} else {
-				userModel.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((user) => {
-					this.props.history.push('/user/' + user.id);
-					toast.success('User created');
-				});
+				this._create(values);
 			}
 		}
 	}
+	_update (values){
+		userModel.update(this.state.user.id, values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((data) => {
+			if (data.status === 'success') {
+				this.setState({
+					user: data.response,
+					errors: {}
+				});
+				toast.success('User updated');
 
+			} else if (data.status === 'errors') {
+				let errors = this.state.errors;
+				_.extend(errors, data.response);
+				this.setState({
+					errors: errors
+				});
+			}
+		});
+	}
+	_create (values){
+		userModel.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((data) => {
+			if(data.status === 'error'){
+				this.setState({
+					errors: data.response
+				});
+			}else{
+				this.setState({
+					errors: {}
+				});
+				this.props.history.push('/user/' + data.response.id);
+				toast.success('User created');
+			}
+		});
+	}
 	_validatePassword(password, retypePassword) {
 		let state;
 		if (this.state.user.id) {
@@ -118,6 +153,7 @@ export default class UserPage extends Component {
 	_isErrors(){
 		return !_.isEmpty(this.state.errors);
 	}
+
 	render() {
 		return (
 			<div>
@@ -153,7 +189,9 @@ export default class UserPage extends Component {
 								       placeholder="Last Name" value={this.state.user.last_name}/>
 								<Checkbox ref="type" type="checkbox"  name="type" label="Manager"
 								          value={this.state.user.type === 1}/>
-								<button className="btn btn-success">Send</button>
+								<div className="col-sm-9 col-sm-offset-3">
+									<button className="btn btn-success">Send</button>
+								</div>
 							</Form>
 						</div>
 					</div>

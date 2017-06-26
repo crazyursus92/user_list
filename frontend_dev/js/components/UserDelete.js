@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import toast from './Toast';
+import toast from './../helpers/Toast';
 import userModel from './../model/UserModel';
 
 
@@ -21,9 +21,14 @@ export default class UserDelete extends Component{
 			}
 		}).then((data) => {
 			if(data && data.status === 'success'){
+				/**
+				 * Кидаем event для того что бы user удалился из списка
+				 */
 				userModel.trigger('users-update', this.props.id);
 				toast.success('User deleted');
 
+			}else if(data && data.status === 'error' && data.code === 404){
+				userModel.trigger('users-update', this.props.id);
 			}
 		});
 	}

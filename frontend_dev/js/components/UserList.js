@@ -22,17 +22,29 @@ export default class UserList extends Component{
 			this.state.page = +route_data.match.params.page;
 		}
 		this._current_state_page = this.state.page;
+		/**
+		 * Event на обнавления списка пользователей (для удаление пользователей)
+		 *
+		 */
 		userModel.on('users-update', this._updateList.bind(this));
 		this._updateList();
 	}
 	_updateList (){
 		userModel.getList((this.state.page - 1) * this.limit).then((data) => {
-			this.setState({
-				users: data.users,
-				count: +data.count
-			});
+			if(data.status === 'success') {
+				this.setState({
+					users: data.response.users,
+					count: +data.response.count
+				});
+			}
 		});
 	}
+
+	/**
+	 * Генерится массив страниц (не нашел как можно сделать for для диапазона в JSX)
+	 * @return {Array}
+	 * @private
+	 */
 	_pager(){
 		let pages = Math.ceil(this.state.count/this.limit);
 		let pages_array = [];
@@ -70,9 +82,7 @@ export default class UserList extends Component{
 								<td>
 									{user.first_name} {user.last_name} ({user.username})
 								</td>
-								<td>
-									<UserControls id={user.id}/>
-								</td>
+								<UserControls id={user.id}/>
 							</tr>
 						)
 					})}

@@ -1,6 +1,4 @@
-import toastr from './../vendor/toastr.min';
-
-
+import toastr from "./../vendor/toastr.min";
 
 
 toastr.options = {

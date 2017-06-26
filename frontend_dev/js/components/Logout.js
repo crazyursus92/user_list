@@ -1,9 +1,9 @@
 import React, {Component} from "react";
 import {Redirect} from "react-router-dom";
-import userModel from './../model/UserModel';
+import userModel from "./../model/UserModel";
 
-export  default  class Logout extends Component{
-	constructor(){
+export  default  class Logout extends Component {
+	constructor() {
 		super();
 		this.state = {
 			logout_complete: false
@@ -14,11 +14,12 @@ export  default  class Logout extends Component{
 			});
 		});
 	}
-	render(){
+
+	render() {
 		return (
 			<div>
 				{(() => {
-					if(this.state.logout_complete){
+					if (this.state.logout_complete) {
 						return (
 							<Redirect to="/login" push={true}/>
 						);

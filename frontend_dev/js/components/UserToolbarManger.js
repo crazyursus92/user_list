@@ -1,9 +1,8 @@
 import React, {Component} from "react";
-import {Link} from 'react-router-dom';
-import UserToolbarPanel from './UserToolbarPanel';
+import {Link} from "react-router-dom";
+import UserToolbarPanel from "./UserToolbarPanel";
 
 export default class UserToolbarManager extends Component {
-
 
 	render() {
 		return (

@@ -1,5 +1,5 @@
-import $ from 'jquery';
-import Toast from './../helpers/Toast';
+import $ from "jquery";
+import Toast from "./../helpers/Toast";
 
 export default class Api {
 	/**
@@ -9,13 +9,14 @@ export default class Api {
 	 * @param {Object} [config]
 	 * @return {Promise}
 	 */
-	get(url, params = {}, config = {}){
+	get(url, params = {}, config = {}) {
 		return new Promise((resolve, reject) => {
 			$.get(url, params).done((data) => {
 				resolve(data);
 			}).fail((data, status, text) => {
-				Toast.error(text);
-				reject(data);
+				Toast.error(data.responseJSON.response);
+				reject(data.responseJSON);
+
 			});
 		});
 	}
@@ -27,15 +28,20 @@ export default class Api {
 	 * @param {Object} [config]
 	 * @return {Promise}
 	 */
-	post(url, params = {}, config = {}){
+	post(url, params = {}, config = {}) {
 		return new Promise((resolve, reject) => {
 			$.post(url, params).done((data) => {
 				resolve(data);
 			}).fail((data, status, text) => {
-				Toast.error(text);
-				reject(data);
+				Toast.error(data.responseJSON.response);
+				reject(data.responseJSON);
+
 			});
 		});
+	}
+
+	_errorMessage(response_message = '') {
+		return response_message.replace(/.+:/, '').trim();
 	}
 
 }

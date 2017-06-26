@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import userModel from "./../model/UserModel";
 import User from "./../model/User";
-import UserControlsManager from './UserControlsManager';
+import UserControlsManager from "./UserControlsManager";
 import UserControlsUser from "./UserControlsUser";
 
 export  default  class UserControls extends Component {
@@ -10,7 +10,20 @@ export  default  class UserControls extends Component {
 		this.state = {
 			current_user: new User({})
 		};
-
+		this._getCurrentUser();
+		this._listener();
+	}
+	_listener(){
+		userModel.on('current-user-change', this._getCurrentUser.bind(this));
+		userModel.on('user-login', this._getCurrentUser.bind(this));
+		userModel.on('user-logout', this._clearUser.bind(this));
+	}
+	_clearUser(){
+		this.setState({
+			current_user: new User()
+		});
+	}
+	_getCurrentUser() {
 		userModel.getCurrentUser().then((user) => {
 			this.setState({
 				current_user: user
@@ -19,18 +32,16 @@ export  default  class UserControls extends Component {
 	}
 
 	render() {
-
-
 		if (this.state.current_user.isManager()) {
 			return (
-				<UserControlsManager id={this.props.id}/>
+				<td>
+					<UserControlsManager id={this.props.id}/>
+				</td>
 			);
 		} else {
 			return (
 				<UserControlsUser id={this.props.id}/>
 			);
 		}
-
-
 	}
 }

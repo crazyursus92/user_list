@@ -45,15 +45,13 @@ class BaseController implements UserInterface
         }
     }
 
-    /**
-     * @return array
-     */
+
     public function update()
     {
         $request = Yii::$app->request;
         $id = $request->post('id');
         if(!$id){
-            throw new BadRequestHttpException("user id is not define");
+            throw new BadRequestHttpException("user id is not defined");
         }
         $user = Users::findOne($id);
         if(!$user){
@@ -116,7 +114,7 @@ class BaseController implements UserInterface
         $request = Yii::$app->request;
         $id = $request->get('id');
         if(!$id){
-            throw new BadRequestHttpException("user id is not define");
+            throw new BadRequestHttpException("user id is not defined");
         }
         $user = Users::findOne($id);
         if(!$user){

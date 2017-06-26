@@ -266,5 +266,9 @@ body {
   background-color: #f2dede;
 }
 
+.form-control-feedback {
+  right: 15px;
+}
+
 
 /*# sourceMappingURL=style.css.map*/
