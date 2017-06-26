@@ -54,6 +54,9 @@ export default class UserList extends Component{
 		return pages_array;
 	}
 
+	/**
+	 * обновляем список если обновилось состояние страницы
+	 */
 	componentDidUpdate(){
 		if(this._current_state_page !== this.state.page){
 			this._current_state_page = this.state.page;

@@ -6,19 +6,9 @@ import Login from "./Login";
 import UserList from "./UserList";
 import UserPage from "./UserPage";
 import Logout from "./Logout";
-import NotLoginComponent from "./NotLoginComponent";
+import NoMatch from "./NoMatch";
+
 import toast from "./../helpers/Toast";
-
-
-
-
-
-const NoMatch = ({ location }) => (
-	<div className="text-center">
-		<h2>404</h2>
-		<h3>No match for <code>{location.pathname}</code></h3>
-	</div>
-);
 
 
 class App extends Component {
@@ -36,13 +26,7 @@ class App extends Component {
 	_listener(){
 		userModel.on('api-error', this._apiError.bind(this));
 		userModel.on('current-user-change-access', this._currentUserChange.bind(this));
-		userModel.on('user-logout', this._logout.bind(this));
-	}
-
-	_logout(){
-		this.setState({
-			current_user: {}
-		});
+		userModel.on('current-user-change', this._getCurrentUser.bind(this));
 	}
 
 	_currentUserChange(){
@@ -63,27 +47,29 @@ class App extends Component {
 	}
 	_getCurrentUser() {
 		userModel.getCurrentUser().then((user) => {
-			this.setState({
-				current_user: user
-			});
 			if (!user.id) {
 				this.refs.router.history.push('/login');
+			}else{
+				this.setState({
+					current_user: user
+				});
+
 			}
 		});
 	}
-
 	render() {
+
 		return (
+
 			<Router ref="router">
 				<Switch>
 					<Route exact path="/" component={UserList}/>
 					<Route exact path='/list' component={UserList}/>
 					<Route strict path='/list/:page' component={UserList}/>
-					<Route path='/login' component={Login}/>
 					<Route path='/logout' component={Logout}/>
 					<Route path='/user/:id' component={UserPage}/>
+					<Route path='/login' component={Login}/>
 					<Route component={NoMatch}/>
-					<NotLoginComponent />
 				</Switch>
 			</Router>
 		);

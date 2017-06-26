@@ -29,8 +29,8 @@ describe('constructor', () => {
 		it('guest', () => {
 			expect(user.isGuest()).toBeTruthy();
 		});
-		it(' not Equals', () => {
-			expect(user.isEquals(user)).toBeFalsy();
+		it(' Equals', () => {
+			expect(user.isEquals(user)).toBeTruthy();
 		});
 	});
 	describe('data', () => {
@@ -151,7 +151,7 @@ describe('isEquals', () => {
 			type: '1',
 			username: 'admin'
 		});
-		expect(user.isEquals(compare_user)).toBeTruthy();
+		expect(user.isEquals(compare_user)).toBeFalsy();
 	});
 	it(' user last_name does not match', () => {
 		let compare_user = new User({
@@ -162,7 +162,7 @@ describe('isEquals', () => {
 			type: '1',
 			username: 'admin'
 		});
-		expect(user.isEquals(compare_user)).toBeTruthy();
+		expect(user.isEquals(compare_user)).toBeFalsy();
 	});
 	it(' user password does not match', () => {
 		let compare_user = new User({
@@ -184,7 +184,89 @@ describe('isEquals', () => {
 			type: '1',
 			username: 'user'
 		});
-		expect(user.isEquals(compare_user)).toBeTruthy();
+		expect(user.isEquals(compare_user)).toBeFalsy();
 	});
 });
 
+
+describe("isChangeAccess", () => {
+	let user = new User({
+		id: '1',
+		first_name: 'Ivan',
+		last_name: 'Ivanov',
+		password: '12345',
+		type: '1',
+		username:'admin'
+	});
+	it(' not param', () => {
+		expect(user.isChangeAccess()).toBeFalsy();
+	});
+
+	it(' user id does not match', () => {
+		let compare_user = new User({
+			id: '2',
+			first_name: 'Ivan',
+			last_name: 'Ivanov',
+			password: '12345',
+			type: '1',
+			username: 'admin'
+		});
+		expect(user.isChangeAccess(compare_user)).toBeFalsy();
+	});
+	it(' user type does not match', () => {
+		let compare_user = new User({
+			id: '1',
+			first_name: 'Ivan',
+			last_name: 'Ivanov',
+			password: '12345',
+			type: '2',
+			username: 'admin'
+		});
+		expect(user.isChangeAccess(compare_user)).toBeTruthy();
+	});
+	it(' user first_name does not match', () => {
+		let compare_user = new User({
+			id: '1',
+			first_name: 'Petr',
+			last_name: 'Ivanov',
+			password: '12345',
+			type: '1',
+			username: 'admin'
+		});
+		expect(user.isChangeAccess(compare_user)).toBeFalsy();
+	});
+	it(' user last_name does not match', () => {
+		let compare_user = new User({
+			id: '1',
+			first_name: 'Ivan',
+			last_name: 'Petrov',
+			password: '12345',
+			type: '1',
+			username: 'admin'
+		});
+		expect(user.isChangeAccess(compare_user)).toBeFalsy();
+	});
+	it(' user password does not match', () => {
+		let compare_user = new User({
+			id: '1',
+			first_name: 'Ivan',
+			last_name: 'Ivanov',
+			password: '1234545',
+			type: '1',
+			username: 'admin'
+		});
+		expect(user.isChangeAccess(compare_user)).toBeFalsy();
+	});
+
+	it(' user username does not match', () => {
+		let compare_user = new User({
+			id: '1',
+			first_name: 'Ivan',
+			last_name: 'Ivanov',
+			password: '12345',
+			type: '1',
+			username: 'user'
+		});
+		expect(user.isChangeAccess(compare_user)).toBeFalsy();
+	});
+});

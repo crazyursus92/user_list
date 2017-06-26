@@ -21,7 +21,13 @@ describe('getList', () => {
 
 	it('change current user trigger event', (done) => {
 		userModel.trigger = jest.fn(userModel.trigger);
-		ajax_mock.done({});
+		ajax_mock.done({user: {
+			id: 1,
+			first_name: 'Ivan',
+			last_name: 'Ivanov',
+			type: 2,
+			username: 'admin'
+		}});
 		userModel.getList().then(() => {
 			expect(userModel.trigger.mock.calls.length).toBe(1);
 			expect(userModel.trigger.mock.calls[0][0]).toBe('current-user-change');
@@ -135,7 +141,13 @@ describe('create', () => {
 
 	it('change current user trigger event', (done) => {
 		userModel.trigger = jest.fn(userModel.trigger);
-		ajax_mock.done({});
+		ajax_mock.done({user: {
+			id: 1,
+			first_name: 'Ivan',
+			last_name: 'Ivanov',
+			type: 2,
+			username: 'admin'
+		}});
 		userModel.create('Ivan', "Ivanov", 'new_user', '12345', 1).then(() => {
 			expect(userModel.trigger.mock.calls.length).toBe(1);
 			expect(userModel.trigger.mock.calls[0][0]).toBe('current-user-change');
@@ -194,7 +206,13 @@ describe('update', () => {
 
 	it('change current user trigger event', (done) => {
 		userModel.trigger = jest.fn(userModel.trigger);
-		ajax_mock.done({});
+		ajax_mock.done({user: {
+			id: 1,
+			first_name: 'Petr',
+			last_name: 'Ivanov',
+			type: 2,
+			username: 'admin'
+		}});
 		userModel.update(1, 'Ivan', "Ivanov", 'admin').then(() => {
 			expect(userModel.trigger.mock.calls.length).toBe(1);
 			expect(userModel.trigger.mock.calls[0][0]).toBe('current-user-change');
@@ -220,7 +238,13 @@ describe('delete', () => {
 
 	it('change current user trigger event', (done) => {
 		userModel.trigger = jest.fn(userModel.trigger);
-		ajax_mock.done({});
+		ajax_mock.done({user: {
+			id: 1,
+			first_name: 'Fedor',
+			last_name: 'Ivanov',
+			type: 2,
+			username: 'admin'
+		}});
 		userModel.delete(1).then(() => {
 			expect(userModel.trigger.mock.calls.length).toBe(1);
 			expect(userModel.trigger.mock.calls[0][0]).toBe('current-user-change');

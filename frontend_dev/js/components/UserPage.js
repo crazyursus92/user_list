@@ -11,7 +11,7 @@ export default class UserPage extends Component {
 	constructor(route_data) {
 		super();
 		this.state = {
-			user: {},
+			user: new User(),
 			errors: {}
 		};
 		this.next_step_user_id = 0;
@@ -20,7 +20,7 @@ export default class UserPage extends Component {
 			let id = +route_data.match.params.id;
 			this.next_step_user_id = id;
 			this.state = {
-				user: {},
+				user: new User(),
 				errors: {}
 			};
 			this._getUser(id);
@@ -30,7 +30,7 @@ export default class UserPage extends Component {
 	_getUser (id){
 		userModel.get(id).then((data) => {
 			if(data.status === 'success') {
-				this.setState({user: data.response, errors: {}});
+				this.setState({user: new User(data.response), errors: {}});
 			}else{
 				this.setState({errors: data.response});
 			}
@@ -68,7 +68,7 @@ export default class UserPage extends Component {
 		if(this.reset_form && this.refs){
 			this.reset_form = false;
 			setTimeout(() => {
-				if(this.state.user.id === 'create') {
+				if(this.next_step_user_id === 'create') {
 					this.refs.username.setValue('');
 					this.refs.password.setValue('');
 					this.refs.retype_password.setValue('');
@@ -105,7 +105,7 @@ export default class UserPage extends Component {
 		userModel.update(this.state.user.id, values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((data) => {
 			if (data.status === 'success') {
 				this.setState({
-					user: data.response,
+					user: new User(data.response),
 					errors: {}
 				});
 				toast.success('User updated');
@@ -188,7 +188,7 @@ export default class UserPage extends Component {
 								<Input ref="last_name" type="text" className="form-control" required name="last_name" label="Last name"
 								       placeholder="Last Name" value={this.state.user.last_name}/>
 								<Checkbox ref="type" type="checkbox"  name="type" label="Manager"
-								          value={this.state.user.type === 1}/>
+								          value={this.state.user.isManager()}/>
 								<div className="col-sm-9 col-sm-offset-3">
 									<button className="btn btn-success">Send</button>
 								</div>

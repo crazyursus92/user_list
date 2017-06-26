@@ -1,8 +1,7 @@
 import React, {Component} from "react";
 import {Link} from "react-router-dom";
 import userModel from "./../model/UserModel";
-import UserDelete from "./UserDelete";
-
+import toast from './../helpers/Toast';
 
 export default class UserControlsManager extends Component {
 	constructor() {
@@ -19,15 +18,28 @@ export default class UserControlsManager extends Component {
 	}
 
 	/**
-	 * Рендерим компонент delete по нажатию на иконку
+	 *
 	 * @param e
 	 * @private
 	 */
 	_delete(e) {
 		e.preventDefault();
-		this.setState({
-			delete: true
-		});
+		if (confirm('Are you sure you want to delete the user?')) {
+			return userModel.delete(this.props.id).then((data) => {
+				if (data && data.status === 'success') {
+					/**
+					 * Кидаем event для того что бы user удалился из списка
+					 */
+					userModel.trigger('users-update', this.props.id);
+					toast.success('User deleted');
+
+				} else if (data && data.status === 'error' && data.code === 404) {
+					userModel.trigger('users-update', this.props.id);
+				}
+			});
+		}
+
+
 	}
 
 	render() {
@@ -38,13 +50,6 @@ export default class UserControlsManager extends Component {
 					</Link>
 					<a className="glyphicon glyphicon-trash" onClick={this._delete.bind(this)}>
 					</a>
-					{(() => {
-						if (this.state.delete) {
-							return (
-								<UserDelete id={this.props.id}/>
-							);
-						}
-					})()}
 				</div>
 			);
 		} else {

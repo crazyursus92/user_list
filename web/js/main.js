@@ -1512,7 +1512,6 @@ var UserModel = function () {
 	function UserModel() {
 		(0, _classCallCheck3.default)(this, UserModel);
 
-
 		this._current_user = new _User2.default({});
 		this.api = new _Api2.default();
 	}
@@ -1534,17 +1533,10 @@ var UserModel = function () {
 	}, {
 		key: "login",
 		value: function login(username, password) {
-			var _this = this;
-
 			return this.api.post('/api/user/login', {
 				username: username,
 				password: password
-			}).then(function (data) {
-				_this.trigger('user-login');
-				_this._current_user_promise = null;
-				_this._changeCurrentUser({});
-				return data;
-			});
+			}).then(this._changeCurrentUser.bind(this), this._apiRejected.bind(this));
 		}
 
 		/**
@@ -1557,37 +1549,35 @@ var UserModel = function () {
 	}, {
 		key: "getCurrentUser",
 		value: function getCurrentUser() {
-			var _this2 = this;
+			var _this = this;
 
 			if (!this._current_user.id && !this._current_user_promise) {
 
 				this._current_user_promise = this.api.get('/api/user/current-user').then(function (data) {
 					if (data.status === 'success') {
-						_this2._changeCurrentUser({ user: data.response });
-						return _this2._current_user;
+						_this._changeCurrentUser({ user: data.response });
+					} else {
+						_this._changeCurrentUser({ user: {} });
 					}
+					return _this._current_user;
 				}, this._apiRejected.bind(this));
 				return this._current_user_promise;
 			} else if (!this._current_user.id) {
 
 				return this._current_user_promise.then(function () {
-					return _this2._current_user;
+					return _this._current_user;
 				});
 			} else {
 
 				return _promise2.default.resolve().then(function () {
-					return _this2._current_user;
+					return _this._current_user;
 				});
 			}
 		}
 	}, {
 		key: "logout",
 		value: function logout() {
-			var _this3 = this;
-
-			return this.api.post("/api/user/logout").then(function () {
-				_this3._changeCurrentUser({});
-			});
+			return this.api.post("/api/user/logout").then(this._changeCurrentUser.bind(this), this._apiRejected.bind(this));
 		}
 	}, {
 		key: "create",
@@ -1641,7 +1631,7 @@ var UserModel = function () {
 		key: "_changeCurrentUser",
 		value: function _changeCurrentUser(data) {
 			var current_user = new _User2.default(data.user || {});
-			if (this._current_user.isEqualsAccess(current_user)) {
+			if (this._current_user.isChangeAccess(current_user)) {
 				this.trigger('current-user-change-access');
 			}
 			if (!this._current_user.isEquals(current_user)) {
@@ -1663,7 +1653,7 @@ var UserModel = function () {
 }();
 
 var user_model = new UserModel();
-window.user_model = user_model;
+
 exports.default = user_model;
 
 /***/ }),
@@ -15508,8 +15498,8 @@ var User = function () {
    */
 
 	}, {
-		key: "isEqualsAccess",
-		value: function isEqualsAccess() {
+		key: "isChangeAccess",
+		value: function isChangeAccess() {
 			var user = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
 			return this.id && this.id === user.id && this.type !== user.type;
@@ -19604,15 +19594,6 @@ var UserToolbar = function (_Component) {
 		key: "_listener",
 		value: function _listener() {
 			_UserModel2.default.on('current-user-change', this._getCurrentUser.bind(this));
-			_UserModel2.default.on('user-login', this._getCurrentUser.bind(this));
-			_UserModel2.default.on('user-logout', this._clearUser.bind(this));
-		}
-	}, {
-		key: "_clearUser",
-		value: function _clearUser() {
-			this.setState({
-				current_user: new _User2.default()
-			});
 		}
 	}, {
 		key: "_getCurrentUser",
@@ -25191,38 +25172,15 @@ var _Logout = __webpack_require__(173);
 
 var _Logout2 = _interopRequireDefault(_Logout);
 
-var _NotLoginComponent = __webpack_require__(383);
+var _NoMatch = __webpack_require__(384);
 
-var _NotLoginComponent2 = _interopRequireDefault(_NotLoginComponent);
+var _NoMatch2 = _interopRequireDefault(_NoMatch);
 
 var _Toast = __webpack_require__(57);
 
 var _Toast2 = _interopRequireDefault(_Toast);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var NoMatch = function NoMatch(_ref) {
-	var location = _ref.location;
-	return _react2.default.createElement(
-		"div",
-		{ className: "text-center" },
-		_react2.default.createElement(
-			"h2",
-			null,
-			"404"
-		),
-		_react2.default.createElement(
-			"h3",
-			null,
-			"No match for ",
-			_react2.default.createElement(
-				"code",
-				null,
-				location.pathname
-			)
-		)
-	);
-};
 
 var App = function (_Component) {
 	(0, _inherits3.default)(App, _Component);
@@ -25246,14 +25204,7 @@ var App = function (_Component) {
 		value: function _listener() {
 			_UserModel2.default.on('api-error', this._apiError.bind(this));
 			_UserModel2.default.on('current-user-change-access', this._currentUserChange.bind(this));
-			_UserModel2.default.on('user-logout', this._logout.bind(this));
-		}
-	}, {
-		key: "_logout",
-		value: function _logout() {
-			this.setState({
-				current_user: {}
-			});
+			_UserModel2.default.on('current-user-change', this._getCurrentUser.bind(this));
 		}
 	}, {
 		key: "_currentUserChange",
@@ -25281,17 +25232,19 @@ var App = function (_Component) {
 			var _this2 = this;
 
 			_UserModel2.default.getCurrentUser().then(function (user) {
-				_this2.setState({
-					current_user: user
-				});
 				if (!user.id) {
 					_this2.refs.router.history.push('/login');
+				} else {
+					_this2.setState({
+						current_user: user
+					});
 				}
 			});
 		}
 	}, {
 		key: "render",
 		value: function render() {
+
 			return _react2.default.createElement(
 				_reactRouterDom.BrowserRouter,
 				{ ref: "router" },
@@ -25301,11 +25254,10 @@ var App = function (_Component) {
 					_react2.default.createElement(_reactRouterDom.Route, { exact: true, path: "/", component: _UserList2.default }),
 					_react2.default.createElement(_reactRouterDom.Route, { exact: true, path: "/list", component: _UserList2.default }),
 					_react2.default.createElement(_reactRouterDom.Route, { strict: true, path: "/list/:page", component: _UserList2.default }),
-					_react2.default.createElement(_reactRouterDom.Route, { path: "/login", component: _Login2.default }),
 					_react2.default.createElement(_reactRouterDom.Route, { path: "/logout", component: _Logout2.default }),
 					_react2.default.createElement(_reactRouterDom.Route, { path: "/user/:id", component: _UserPage2.default }),
-					_react2.default.createElement(_reactRouterDom.Route, { component: NoMatch }),
-					_react2.default.createElement(_NotLoginComponent2.default, null)
+					_react2.default.createElement(_reactRouterDom.Route, { path: "/login", component: _Login2.default }),
+					_react2.default.createElement(_reactRouterDom.Route, { component: _NoMatch2.default })
 				)
 			);
 		}
@@ -25350,12 +25302,6 @@ var _react = __webpack_require__(2);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _jquery = __webpack_require__(52);
-
-var _jquery2 = _interopRequireDefault(_jquery);
-
-var _reactRouterDom = __webpack_require__(37);
-
 var _UserModel = __webpack_require__(21);
 
 var _UserModel2 = _interopRequireDefault(_UserModel);
@@ -25371,7 +25317,15 @@ var Login = function (_Component) {
 
 	function Login() {
 		(0, _classCallCheck3.default)(this, Login);
-		return (0, _possibleConstructorReturn3.default)(this, (Login.__proto__ || (0, _getPrototypeOf2.default)(Login)).call(this));
+
+		var _this = (0, _possibleConstructorReturn3.default)(this, (Login.__proto__ || (0, _getPrototypeOf2.default)(Login)).call(this));
+
+		_UserModel2.default.getCurrentUser().then(function (user) {
+			if (user.id) {
+				_this.props.history.push('/');
+			}
+		});
+		return _this;
 	}
 
 	(0, _createClass3.default)(Login, [{
@@ -25494,17 +25448,11 @@ var Logout = function (_Component) {
 	(0, _createClass3.default)(Logout, [{
 		key: "render",
 		value: function render() {
-			var _this2 = this;
-
-			return _react2.default.createElement(
-				"div",
-				null,
-				function () {
-					if (_this2.state.logout_complete) {
-						return _react2.default.createElement(_reactRouterDom.Redirect, { to: "/login", push: true });
-					}
-				}()
-			);
+			if (this.state.logout_complete) {
+				return _react2.default.createElement(_reactRouterDom.Redirect, { to: "/login", push: true });
+			} else {
+				return _react2.default.createElement("div", null);
+			}
 		}
 	}]);
 	return Logout;
@@ -25585,15 +25533,6 @@ var UserControls = function (_Component) {
 		key: "_listener",
 		value: function _listener() {
 			_UserModel2.default.on('current-user-change', this._getCurrentUser.bind(this));
-			_UserModel2.default.on('user-login', this._getCurrentUser.bind(this));
-			_UserModel2.default.on('user-logout', this._clearUser.bind(this));
-		}
-	}, {
-		key: "_clearUser",
-		value: function _clearUser() {
-			this.setState({
-				current_user: new _User2.default()
-			});
 		}
 	}, {
 		key: "_getCurrentUser",
@@ -25666,9 +25605,9 @@ var _UserModel = __webpack_require__(21);
 
 var _UserModel2 = _interopRequireDefault(_UserModel);
 
-var _UserDelete = __webpack_require__(177);
+var _Toast = __webpack_require__(57);
 
-var _UserDelete2 = _interopRequireDefault(_UserDelete);
+var _Toast2 = _interopRequireDefault(_Toast);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -25693,7 +25632,7 @@ var UserControlsManager = function (_Component) {
 	}
 
 	/**
-  * Рендерим компонент delete по нажатию на иконку
+  *
   * @param e
   * @private
   */
@@ -25702,27 +25641,32 @@ var UserControlsManager = function (_Component) {
 	(0, _createClass3.default)(UserControlsManager, [{
 		key: "_delete",
 		value: function _delete(e) {
+			var _this2 = this;
+
 			e.preventDefault();
-			this.setState({
-				delete: true
-			});
+			if (confirm('Are you sure you want to delete the user?')) {
+				return _UserModel2.default.delete(this.props.id).then(function (data) {
+					if (data && data.status === 'success') {
+						/**
+       * Кидаем event для того что бы user удалился из списка
+       */
+						_UserModel2.default.trigger('users-update', _this2.props.id);
+						_Toast2.default.success('User deleted');
+					} else if (data && data.status === 'error' && data.code === 404) {
+						_UserModel2.default.trigger('users-update', _this2.props.id);
+					}
+				});
+			}
 		}
 	}, {
 		key: "render",
 		value: function render() {
-			var _this2 = this;
-
 			if (+this.state.current_user.id !== +this.props.id) {
 				return _react2.default.createElement(
 					"div",
 					null,
 					_react2.default.createElement(_reactRouterDom.Link, { to: "/user/" + this.props.id, className: "glyphicon glyphicon-pencil" }),
-					_react2.default.createElement("a", { className: "glyphicon glyphicon-trash", onClick: this._delete.bind(this) }),
-					function () {
-						if (_this2.state.delete) {
-							return _react2.default.createElement(_UserDelete2.default, { id: _this2.props.id });
-						}
-					}()
+					_react2.default.createElement("a", { className: "glyphicon glyphicon-trash", onClick: this._delete.bind(this) })
 				);
 			} else {
 				return _react2.default.createElement("div", null);
@@ -25791,97 +25735,7 @@ var UserControlsUser = function (_Component) {
 exports.default = UserControlsUser;
 
 /***/ }),
-/* 177 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _getPrototypeOf = __webpack_require__(10);
-
-var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
-
-var _classCallCheck2 = __webpack_require__(7);
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = __webpack_require__(9);
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
-var _possibleConstructorReturn2 = __webpack_require__(12);
-
-var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
-
-var _inherits2 = __webpack_require__(11);
-
-var _inherits3 = _interopRequireDefault(_inherits2);
-
-var _react = __webpack_require__(2);
-
-var _react2 = _interopRequireDefault(_react);
-
-var _Toast = __webpack_require__(57);
-
-var _Toast2 = _interopRequireDefault(_Toast);
-
-var _UserModel = __webpack_require__(21);
-
-var _UserModel2 = _interopRequireDefault(_UserModel);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var UserDelete = function (_Component) {
-	(0, _inherits3.default)(UserDelete, _Component);
-
-	function UserDelete() {
-		(0, _classCallCheck3.default)(this, UserDelete);
-
-		// if(!route_data.match.params.id){
-		// 	toast.error('failed to delete user');
-		// 	throw new Error('route param id not found');
-		// }
-		var _this = (0, _possibleConstructorReturn3.default)(this, (UserDelete.__proto__ || (0, _getPrototypeOf2.default)(UserDelete)).call(this));
-
-		_UserModel2.default.getCurrentUser().then(function (user) {
-			if (+_this.props.id === +user.id) {
-				_Toast2.default.error('It is not possible to remove yourself');
-				return false;
-			} else {
-				if (confirm('Are you sure you want to delete the user?')) {
-					return _UserModel2.default.delete(_this.props.id);
-				}
-			}
-		}).then(function (data) {
-			if (data && data.status === 'success') {
-				/**
-     * Кидаем event для того что бы user удалился из списка
-     */
-				_UserModel2.default.trigger('users-update', _this.props.id);
-				_Toast2.default.success('User deleted');
-			} else if (data && data.status === 'error' && data.code === 404) {
-				_UserModel2.default.trigger('users-update', _this.props.id);
-			}
-		});
-		return _this;
-	}
-
-	(0, _createClass3.default)(UserDelete, [{
-		key: 'render',
-		value: function render() {
-			return _react2.default.createElement('div', null);
-		}
-	}]);
-	return UserDelete;
-}(_react.Component);
-
-exports.default = UserDelete;
-
-/***/ }),
+/* 177 */,
 /* 178 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -25996,6 +25850,11 @@ var UserList = function (_Component) {
 			}
 			return pages_array;
 		}
+
+		/**
+   * обновляем список если обновилось состояние страницы
+   */
+
 	}, {
 		key: "componentDidUpdate",
 		value: function componentDidUpdate() {
@@ -26153,7 +26012,7 @@ var UserPage = function (_Component) {
 		var _this = (0, _possibleConstructorReturn3.default)(this, (UserPage.__proto__ || (0, _getPrototypeOf2.default)(UserPage)).call(this));
 
 		_this.state = {
-			user: {},
+			user: new _User2.default(),
 			errors: {}
 		};
 		_this.next_step_user_id = 0;
@@ -26162,7 +26021,7 @@ var UserPage = function (_Component) {
 			var id = +route_data.match.params.id;
 			_this.next_step_user_id = id;
 			_this.state = {
-				user: {},
+				user: new _User2.default(),
 				errors: {}
 			};
 			_this._getUser(id);
@@ -26177,7 +26036,7 @@ var UserPage = function (_Component) {
 
 			_UserModel2.default.get(id).then(function (data) {
 				if (data.status === 'success') {
-					_this2.setState({ user: data.response, errors: {} });
+					_this2.setState({ user: new _User2.default(data.response), errors: {} });
 				} else {
 					_this2.setState({ errors: data.response });
 				}
@@ -26222,7 +26081,7 @@ var UserPage = function (_Component) {
 			if (this.reset_form && this.refs) {
 				this.reset_form = false;
 				setTimeout(function () {
-					if (_this3.state.user.id === 'create') {
+					if (_this3.next_step_user_id === 'create') {
 						_this3.refs.username.setValue('');
 						_this3.refs.password.setValue('');
 						_this3.refs.retype_password.setValue('');
@@ -26264,7 +26123,7 @@ var UserPage = function (_Component) {
 			_UserModel2.default.update(this.state.user.id, values.first_name, values.last_name, values.username, values.password || null, values.type || null).then(function (data) {
 				if (data.status === 'success') {
 					_this4.setState({
-						user: data.response,
+						user: new _User2.default(data.response),
 						errors: {}
 					});
 					_Toast2.default.success('User updated');
@@ -26369,7 +26228,7 @@ var UserPage = function (_Component) {
 								_react2.default.createElement(_formsyReactComponents.Input, { ref: "last_name", type: "text", className: "form-control", required: true, name: "last_name", label: "Last name",
 									placeholder: "Last Name", value: this.state.user.last_name }),
 								_react2.default.createElement(_formsyReactComponents.Checkbox, { ref: "type", type: "checkbox", name: "type", label: "Manager",
-									value: this.state.user.type === 1 }),
+									value: this.state.user.isManager() }),
 								_react2.default.createElement(
 									"div",
 									{ className: "col-sm-9 col-sm-offset-3" },
@@ -26669,13 +26528,6 @@ var Api = function () {
 					reject(data.responseJSON);
 				});
 			});
-		}
-	}, {
-		key: "_errorMessage",
-		value: function _errorMessage() {
-			var response_message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
-			return response_message.replace(/.+:/, '').trim();
 		}
 	}]);
 	return Api;
@@ -44363,7 +44215,8 @@ module.exports = __webpack_require__(169);
 
 
 /***/ }),
-/* 383 */
+/* 383 */,
+/* 384 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -44373,90 +44226,36 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _getPrototypeOf = __webpack_require__(10);
-
-var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
-
-var _classCallCheck2 = __webpack_require__(7);
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = __webpack_require__(9);
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
-var _possibleConstructorReturn2 = __webpack_require__(12);
-
-var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
-
-var _inherits2 = __webpack_require__(11);
-
-var _inherits3 = _interopRequireDefault(_inherits2);
-
 var _react = __webpack_require__(2);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactRouterDom = __webpack_require__(37);
-
-var _UserModel = __webpack_require__(21);
-
-var _UserModel2 = _interopRequireDefault(_UserModel);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var NotLoginComponent = function (_Component) {
-	(0, _inherits3.default)(NotLoginComponent, _Component);
+var NoMatch = function NoMatch(_ref) {
+	var location = _ref.location;
+	return _react2.default.createElement(
+		"div",
+		{ className: "text-center" },
+		_react2.default.createElement(
+			"h2",
+			null,
+			"404"
+		),
+		_react2.default.createElement(
+			"h3",
+			null,
+			"No match for ",
+			_react2.default.createElement(
+				"code",
+				null,
+				location.pathname
+			)
+		)
+	);
+};
 
-	function NotLoginComponent() {
-		(0, _classCallCheck3.default)(this, NotLoginComponent);
-
-		var _this = (0, _possibleConstructorReturn3.default)(this, (NotLoginComponent.__proto__ || (0, _getPrototypeOf2.default)(NotLoginComponent)).call(this));
-
-		_this.state = {
-			current_user: null
-		};
-		_this._getCurrentUser();
-		_UserModel2.default.on('api-error', function () {
-			_this.setState({
-				current_user: null
-			});
-			_this._getCurrentUser();
-		});
-		_UserModel2.default.on('current-user-change-access', function () {
-			_this.setState({
-				current_user: null
-			});
-			_this._getCurrentUser();
-		});
-		return _this;
-	}
-
-	(0, _createClass3.default)(NotLoginComponent, [{
-		key: "_getCurrentUser",
-		value: function _getCurrentUser() {
-			var _this2 = this;
-
-			_UserModel2.default.getCurrentUser().then(function (user) {
-				_this2.setState({
-					current_user: user
-				});
-			});
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			if (this.state.user && !this.state.user.id) {
-				_react2.default.createElement(_reactRouterDom.Redirect, { to: "/login" });
-			} else {
-				return _react2.default.createElement("div", null);
-			}
-		}
-	}]);
-	return NotLoginComponent;
-}(_react.Component);
-
-exports.default = NotLoginComponent;
+exports.default = NoMatch;
 
 /***/ })
 /******/ ]);

@@ -39,7 +39,7 @@ export  default  class User {
 	 *
 	 * @param {User|Object} user
 	 */
-	isEqualsAccess(user = {}) {
+	isChangeAccess(user = {}) {
 		return this.id && this.id === user.id && this.type !== user.type;
 	}
 

@@ -26,7 +26,7 @@ describe('get', () => {
 		expect($.get.mock.calls[1][1].offset).toEqual(10);
 	});
 
-	it('  done resolve data', (done) => {
+	it('done resolve data', (done) => {
 		let data = 'server response';
 		ajax_mock.done(data);
 		api.get('/get/list').then((response) => {

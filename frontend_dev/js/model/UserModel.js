@@ -5,7 +5,6 @@ import Api from "./../core/Api";
 class UserModel {
 
 	constructor() {
-
 		this._current_user = new User({});
 		this.api = new Api();
 	}
@@ -23,12 +22,7 @@ class UserModel {
 		return this.api.post('/api/user/login', {
 			username: username,
 			password: password
-		}).then((data) => {
-			this.trigger('user-login');
-			this._current_user_promise = null;
-			this._changeCurrentUser({});
-			return data;
-		});
+		}).then(this._changeCurrentUser.bind(this), this._apiRejected.bind(this));
 	}
 
 	/**
@@ -43,8 +37,10 @@ class UserModel {
 			this._current_user_promise = this.api.get('/api/user/current-user').then((data) => {
 				if (data.status === 'success') {
 					this._changeCurrentUser({user: data.response});
-					return this._current_user;
+				}else{
+					this._changeCurrentUser({user: {}});
 				}
+				return this._current_user;
 			}, this._apiRejected.bind(this));
 			return this._current_user_promise;
 
@@ -63,9 +59,7 @@ class UserModel {
 	}
 
 	logout() {
-		return this.api.post("/api/user/logout").then(() => {
-			this._changeCurrentUser({});
-		});
+		return this.api.post("/api/user/logout").then(this._changeCurrentUser.bind(this), this._apiRejected.bind(this));
 	}
 
 	create(first_name, last_name, username, password, type) {
@@ -110,7 +104,7 @@ class UserModel {
 
 	_changeCurrentUser(data) {
 		let current_user = new User(data.user || {});
-		if (this._current_user.isEqualsAccess(current_user)) {
+		if (this._current_user.isChangeAccess(current_user)) {
 			this.trigger('current-user-change-access');
 		}
 		if(!this._current_user.isEquals(current_user)){
@@ -129,5 +123,5 @@ class UserModel {
 }
 
 const user_model = new UserModel();
-window.user_model = user_model;
+
 export default user_model;

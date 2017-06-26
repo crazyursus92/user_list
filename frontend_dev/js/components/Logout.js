@@ -16,16 +16,15 @@ export  default  class Logout extends Component {
 	}
 
 	render() {
-		return (
-			<div>
-				{(() => {
-					if (this.state.logout_complete) {
-						return (
-							<Redirect to="/login" push={true}/>
-						);
-					}
-				})()}
-			</div>
-		);
+		if(this.state.logout_complete){
+			return (
+				<Redirect to="/login" push={true}/>
+			);
+		}else {
+			return (
+				<div>
+				</div>
+			);
+		}
 	}
 }

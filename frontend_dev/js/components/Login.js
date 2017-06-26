@@ -1,6 +1,4 @@
 import React, {Component} from "react";
-import $ from "jquery";
-import {Redirect} from "react-router-dom";
 import userModel from "./../model/UserModel";
 import {Form} from "formsy-react";
 import {Input} from "formsy-react-components";
@@ -9,6 +7,11 @@ export default class Login extends Component {
 
 	constructor() {
 		super();
+		userModel.getCurrentUser().then((user) => {
+			if(user.id){
+				this.props.history.push('/');
+			}
+		});
 	}
 
 	submit(form_data) {

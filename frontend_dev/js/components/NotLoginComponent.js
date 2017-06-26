@@ -1,7 +1,9 @@
 import React, {Component} from "react";
 import {Redirect} from "react-router-dom";
 import userModel from "./../model/UserModel";
-
+/**
+ * TODO проверить необхоимость данного компонента - уже отключил если будет работать нормально то выкидываем его
+ */
 
 export default class NotLoginComponent extends Component{
 	constructor(){
@@ -10,18 +12,16 @@ export default class NotLoginComponent extends Component{
 			current_user: null
 		};
 		this._getCurrentUser();
-		userModel.on('api-error', () => {
-			this.setState({
-				current_user: null
-			});
-			this._getCurrentUser();
+	}
+	_listener(){
+		userModel.on('current-user-change-access', this._userChange.bind(this));
+		userModel.on('api-error', this._userChange.bind(this));
+	}
+	_userChange(){
+		this.setState({
+			current_user: null
 		});
-		userModel.on('current-user-change-access', () => {
-			this.setState({
-				current_user: null
-			});
-			this._getCurrentUser();
-		});
+		this._getCurrentUser();
 	}
 	_getCurrentUser(){
 		userModel.getCurrentUser().then((user) => {
@@ -33,7 +33,9 @@ export default class NotLoginComponent extends Component{
 
 	render(){
 		if(this.state.user && !this.state.user.id){
-			<Redirect to='/login'/>
+			return (
+				<Redirect to='/login'/>
+			);
 		}else{
 			return (
 				<div>

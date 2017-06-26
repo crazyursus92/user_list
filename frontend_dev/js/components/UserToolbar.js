@@ -17,14 +17,7 @@ export default class UserToolbar extends Component {
 
 	_listener(){
 		userModel.on('current-user-change', this._getCurrentUser.bind(this));
-		userModel.on('user-login', this._getCurrentUser.bind(this));
-		userModel.on('user-logout', this._clearUser.bind(this));
-	}
 
-	_clearUser(){
-		this.setState({
-			current_user: new User()
-		});
 	}
 
 	_getCurrentUser() {

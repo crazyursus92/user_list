@@ -40,8 +40,5 @@ export default class Api {
 		});
 	}
 
-	_errorMessage(response_message = '') {
-		return response_message.replace(/.+:/, '').trim();
-	}
 
 }
