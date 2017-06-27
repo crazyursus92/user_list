@@ -53,10 +53,14 @@ class BaseController implements UserInterface
         if(!$id){
             throw new BadRequestHttpException("user id is not defined");
         }
+        if(intval($id) === intval($this->current_user->id)){
+            throw new BadRequestHttpException("You can not edit yourself");
+        }
         $user = Users::findOne($id);
         if(!$user){
             throw new NotFoundHttpException("User not found");
         }
+
         foreach ($request->post() as $key => $value){
             if($value){
                 $user->setAttribute($key, $value);

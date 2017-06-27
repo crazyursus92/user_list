@@ -274,5 +274,10 @@ body {
   content: '*';
 }
 
+.user-delete {
+  cursor: pointer;
+  margin-left: 10px;
+}
+
 
 /*# sourceMappingURL=style.css.map*/

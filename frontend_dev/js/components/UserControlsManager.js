@@ -53,7 +53,7 @@ export default class UserControlsManager extends Component {
 				<div>
 					<Link to={`/user/${this.props.id}`} className="glyphicon glyphicon-pencil">
 					</Link>
-					<a className="glyphicon glyphicon-trash" onClick={this._delete.bind(this)}>
+					<a className="glyphicon glyphicon-trash user-delete" onClick={this._delete.bind(this)}>
 					</a>
 				</div>
 			);

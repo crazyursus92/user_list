@@ -15,11 +15,11 @@ export default class UserPage extends Component {
 			errors: {},
 			required: 'required'
 		};
-		this.next_step_user_id = 0;
-
+		this.new_user_id = 0;
+		this.current_user = new User();
 		if (route_data.match.params.id && route_data.match.params.id !== 'create') {
 			let id = +route_data.match.params.id;
-			this.next_step_user_id = id;
+			this.new_user_id = id;
 			this.state = {
 				user: new User(),
 				errors: {},
@@ -27,10 +27,20 @@ export default class UserPage extends Component {
 			};
 			this._getUser(id);
 		}
+
 	}
 
 	_getUser (id){
-		userModel.get(id).then((data) => {
+		userModel.getCurrentUser().then((current_user) => {
+			this.current_user = current_user;
+			if(this.current_user.id === +id){
+				toast.error('You can not edit yourself');
+				return {};
+			}else{
+				return userModel.get(id);
+			}
+		}).then((data) => {
+
 			if(data.status === 'success') {
 				this.setState({user: new User(data.response), errors: {}});
 			}else if(data.code === 200){
@@ -42,39 +52,27 @@ export default class UserPage extends Component {
 	}
 
 	/**
-	 * Обновляем текущий user_id и запрашиваем этого пользователя если  новый user_id отличается от текущего
+	 * Обновляем текущий user_id и запрашиваем этого пользователя если новый user_id отличается от текущего
 	 * @param nextProps
 	 * @param nextState
 	 */
 	componentWillUpdate(nextProps, nextState){
 		let new_id = !isNaN(+nextProps.match.params.id) ? +nextProps.match.params.id : nextProps.match.params.id;
-		if ( nextProps.match.params.id && new_id !== this.next_step_user_id) {
-			this.next_step_user_id = new_id;
+
+		if ( nextProps.match.params.id && new_id !== this.new_user_id) {
+			this.new_user_id = new_id;
 			if(new_id === 'create') {
 				let user = new User({});
 				this.setState({
 					user: user
 				});
-
 			}else{
 				this._getUser(new_id);
 			}
 		}
 	}
 
-	/**
-	 * Топор на отчистку формы если у мы переходим со страницы пользователя на страницу создания пользователя
-	 */
-	componentDidUpdate(){
-		if(this.reset_form && this.refs){
-			this.reset_form = false;
-			setTimeout(() => {
-				if(this.next_step_user_id === 'create') {
 
-				}
-			}, 100);
-		}
-	}
 
 	_submit(e) {
 		e.preventDefault();

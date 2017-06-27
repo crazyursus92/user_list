@@ -25790,7 +25790,7 @@ var UserControlsManager = function (_Component) {
 					"div",
 					null,
 					_react2.default.createElement(_reactRouterDom.Link, { to: "/user/" + this.props.id, className: "glyphicon glyphicon-pencil" }),
-					_react2.default.createElement("a", { className: "glyphicon glyphicon-trash", onClick: this._delete.bind(this) })
+					_react2.default.createElement("a", { className: "glyphicon glyphicon-trash user-delete", onClick: this._delete.bind(this) })
 				);
 			} else {
 				return _react2.default.createElement("div", null);
@@ -26171,11 +26171,11 @@ var UserPage = function (_Component) {
 			errors: {},
 			required: 'required'
 		};
-		_this.next_step_user_id = 0;
-
+		_this.new_user_id = 0;
+		_this.current_user = new _User2.default();
 		if (route_data.match.params.id && route_data.match.params.id !== 'create') {
 			var id = +route_data.match.params.id;
-			_this.next_step_user_id = id;
+			_this.new_user_id = id;
 			_this.state = {
 				user: new _User2.default(),
 				errors: {},
@@ -26183,6 +26183,7 @@ var UserPage = function (_Component) {
 			};
 			_this._getUser(id);
 		}
+
 		return _this;
 	}
 
@@ -26191,7 +26192,16 @@ var UserPage = function (_Component) {
 		value: function _getUser(id) {
 			var _this2 = this;
 
-			_UserModel2.default.get(id).then(function (data) {
+			_UserModel2.default.getCurrentUser().then(function (current_user) {
+				_this2.current_user = current_user;
+				if (_this2.current_user.id === +id) {
+					_Toast2.default.error('You can not edit yourself');
+					return {};
+				} else {
+					return _UserModel2.default.get(id);
+				}
+			}).then(function (data) {
+
 				if (data.status === 'success') {
 					_this2.setState({ user: new _User2.default(data.response), errors: {} });
 				} else if (data.code === 200) {
@@ -26203,7 +26213,7 @@ var UserPage = function (_Component) {
 		}
 
 		/**
-   * Обновляем текущий user_id и запрашиваем этого пользователя если  новый user_id отличается от текущего
+   * Обновляем текущий user_id и запрашиваем этого пользователя если новый user_id отличается от текущего
    * @param nextProps
    * @param nextState
    */
@@ -26212,8 +26222,9 @@ var UserPage = function (_Component) {
 		key: 'componentWillUpdate',
 		value: function componentWillUpdate(nextProps, nextState) {
 			var new_id = !isNaN(+nextProps.match.params.id) ? +nextProps.match.params.id : nextProps.match.params.id;
-			if (nextProps.match.params.id && new_id !== this.next_step_user_id) {
-				this.next_step_user_id = new_id;
+
+			if (nextProps.match.params.id && new_id !== this.new_user_id) {
+				this.new_user_id = new_id;
 				if (new_id === 'create') {
 					var user = new _User2.default({});
 					this.setState({
@@ -26222,23 +26233,6 @@ var UserPage = function (_Component) {
 				} else {
 					this._getUser(new_id);
 				}
-			}
-		}
-
-		/**
-   * Топор на отчистку формы если у мы переходим со страницы пользователя на страницу создания пользователя
-   */
-
-	}, {
-		key: 'componentDidUpdate',
-		value: function componentDidUpdate() {
-			var _this3 = this;
-
-			if (this.reset_form && this.refs) {
-				this.reset_form = false;
-				setTimeout(function () {
-					if (_this3.next_step_user_id === 'create') {}
-				}, 100);
 			}
 		}
 	}, {
@@ -26258,40 +26252,40 @@ var UserPage = function (_Component) {
 	}, {
 		key: '_update',
 		value: function _update(values) {
-			var _this4 = this;
+			var _this3 = this;
 
 			_UserModel2.default.update(this.state.user.id, values.first_name, values.last_name, values.username, values.password || null, values.type || null).then(function (data) {
 				if (data.status === 'success') {
-					_this4.setState({
+					_this3.setState({
 						user: new _User2.default(data.response),
 						errors: {}
 					});
-					_this4._updateInputs(_this4.state.user);
+					_this3._updateInputs(_this3.state.user);
 					_Toast2.default.success('User updated');
 				} else if (data.status === 'error' && data.code === 200) {
-					_this4.setState({
+					_this3.setState({
 						errors: data.response
 					});
 				} else {
-					_this4.props.history.push('/');
+					_this3.props.history.push('/');
 				}
 			});
 		}
 	}, {
 		key: '_create',
 		value: function _create(values) {
-			var _this5 = this;
+			var _this4 = this;
 
 			_UserModel2.default.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then(function (data) {
 				if (data.status === 'error' && data.code === 200) {
-					_this5.setState({
+					_this4.setState({
 						errors: data.response
 					});
 				} else {
-					_this5.setState({
+					_this4.setState({
 						errors: {}
 					});
-					_this5.props.history.push('/list');
+					_this4.props.history.push('/list');
 					_Toast2.default.success('User created');
 				}
 			});
