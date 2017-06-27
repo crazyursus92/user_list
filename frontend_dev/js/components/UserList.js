@@ -108,9 +108,9 @@ export default class UserList extends Component {
 						<tbody>
 						{ this.state.users.map((user, index) => {
 							return (
-								<tr data-id={user.id} key={index}>
-									<td>
-										{user.first_name} {user.last_name} ({user.username})
+								<tr  data-id={user.id} key={index}>
+									<td className="user-name">
+											{user.first_name} {user.last_name} ({user.username})
 									</td>
 									<UserControls id={user.id}/>
 								</tr>

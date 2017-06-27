@@ -24,3 +24,14 @@ body {
   cursor: pointer;
   margin-left: 10px;
 }
+
+td.user-name{
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+tbdoy{
+  width: 100%;
+}

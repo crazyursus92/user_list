@@ -24886,7 +24886,7 @@ var UserList = function (_Component) {
 									{ "data-id": user.id, key: index },
 									_react2.default.createElement(
 										"td",
-										null,
+										{ className: "user-name" },
 										user.first_name,
 										" ",
 										user.last_name,
