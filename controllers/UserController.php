@@ -56,7 +56,9 @@ class UserController extends Controller
     }
 
     public function actionLogin(){
-        return $this->response($this->state->login());
+        $result = $this->state->login();
+        $this->stateInit();
+        return $this->response($result);
     }
 
     public function actionLogout(){

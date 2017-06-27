@@ -1,23 +1,21 @@
 import React, {Component} from "react";
-import _ from 'underscore';
-import Input from './Input';
-import Checkbox from './Checkbox';
+import Input from "./Input";
+import Checkbox from "./Checkbox";
 import UserToolbar from "./UserToolbar";
 import userModel from "./../model/UserModel";
-import toast from './../helpers/Toast';
-import User from './../model/User';
+import toast from "./../helpers/Toast";
+import User from "./../model/User";
 
 export default class UserPage extends Component {
 	constructor(route_data) {
 		super();
 		this.state = {
 			user: new User(),
-			errors: {},
-			required: 'required'
+			errors: {}
 		};
 		this.new_user_id = 0;
 		this.current_user = new User();
-
+		this._isMounted = false;
 		if (route_data.match.params.id && route_data.match.params.id !== 'create') {
 			this.new_user_id = +route_data.match.params.id;
 		}
@@ -26,34 +24,56 @@ export default class UserPage extends Component {
 
 	}
 
-	componentDidMount(){
+	componentDidMount() {
 		this._currentUserAccess();
+		this._isMounted = true;
 		userModel.on('current-user-change', this._currentUserAccess);
-	}
-	componentWillUnmount(){
-		userModel.off('current-user-change', this._currentUserAccess);
-	}
-	_currentUserAccess(){
-		userModel.getCurrentUser().then((current_user) => {
-			if(!current_user.isManager()){
-				toast.error('Forbidden');
-				this.props.history.push('/');
-			}else if(current_user.id === this.new_user_id){
-				toast.error('You can not edit yourself');
-				this.props.history.push('/');
-			}else if(this.new_user_id !== 'create'){
-				this._getUser(this.new_user_id);
+		this.props.history.listen(() => {
+			if (this.props.match.params.id === 'create') {
+				this._clearUser();
 			}
 		});
 	}
 
-	_getUser (id){
+	componentWillUnmount() {
+		this._isMounted = false;
+		userModel.off('current-user-change', this._currentUserAccess);
+	}
+
+	_clearUser() {
+		if (this._isMounted) {
+			this.setState({
+				user: new User(),
+				errors: {}
+			});
+		}
+	}
+
+	_currentUserAccess() {
+		userModel.getCurrentUser().then((current_user) => {
+			if (!current_user.id) {
+				return;
+			}
+			if (!current_user.isManager()) {
+				toast.error('Forbidden');
+				this.props.history.push('/');
+			} else if (current_user.id === this.new_user_id) {
+				toast.error('You can not edit yourself');
+				this.props.history.push('/');
+			} else if (this.new_user_id && this.new_user_id !== 'create') {
+				this._getUser(this.new_user_id);
+			}
+
+		});
+	}
+
+	_getUser(id) {
 		userModel.get(id).then((data) => {
-			if(data.status === 'success') {
+			if (data.status === 'success') {
 				this.setState({user: new User(data.response), errors: {}});
-			}else if(data.code === 200){
+			} else if (data.code === 200) {
 				this.setState({errors: data.response});
-			}else{
+			} else {
 				this.props.history.push('/');
 			}
 		});
@@ -64,22 +84,17 @@ export default class UserPage extends Component {
 	 * @param nextProps
 	 * @param nextState
 	 */
-	componentWillUpdate(nextProps, nextState){
+	componentWillUpdate(nextProps, nextState) {
 		let new_id = !isNaN(+nextProps.match.params.id) ? +nextProps.match.params.id : nextProps.match.params.id;
-
-		if ( nextProps.match.params.id && new_id !== this.new_user_id) {
+		if (nextProps.match.params.id && new_id !== this.new_user_id) {
 			this.new_user_id = new_id;
-			if(new_id === 'create') {
-				let user = new User({});
-				this.setState({
-					user: user
-				});
-			}else{
+			if (new_id === 'create') {
+				this._clearUser();
+			} else {
 				this._getUser(new_id);
 			}
 		}
 	}
-
 
 
 	_submit(e) {
@@ -95,7 +110,7 @@ export default class UserPage extends Component {
 		}
 	}
 
-	_update (values){
+	_update(values) {
 		userModel.update(this.state.user.id, values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((data) => {
 			if (data.status === 'success') {
 				this.setState({
@@ -108,19 +123,19 @@ export default class UserPage extends Component {
 				this.setState({
 					errors: data.response
 				});
-			}else{
+			} else {
 				this.props.history.push('/');
 			}
 		});
 	}
 
-	_create (values){
+	_create(values) {
 		userModel.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((data) => {
-			if(data.status === 'error' && data.code === 200){
+			if (data.status === 'error' && data.code === 200) {
 				this.setState({
 					errors: data.response
 				});
-			}else{
+			} else {
 				this.setState({
 					errors: {}
 				});
@@ -137,10 +152,10 @@ export default class UserPage extends Component {
 				return true;
 			}
 			state = password === retypePassword;
-		}else {
+		} else {
 			state = !!password && password === retypePassword;
 		}
-		if(!state){
+		if (!state) {
 			this.setState({
 				errors: {
 					retype_password: 'Passwords do not match'
@@ -150,13 +165,13 @@ export default class UserPage extends Component {
 		return state;
 	}
 
-	_changeInput(e){
+	_changeInput(e) {
 		let name = e.target.getAttribute('name'),
 			user = this.state.user;
 
-		if(name === 'type'){
+		if (name === 'type') {
 			user[name] = !e.target.value || e.target.value === 'false' ? 1 : 2;
-		}else{
+		} else {
 			user[name] = e.target.value;
 		}
 
@@ -174,63 +189,64 @@ export default class UserPage extends Component {
 						<div className="panel-body">
 
 							<form className="form-horizontal" onSubmit={this._submit.bind(this)}>
-								<Input  type="text"
-								        onChange={this._changeInput.bind(this)}
-								        required name="username"
-								        label="Username"
-								        maxLength={32}
-								        placeholder="Username"
-								        value={this.state.user.username}
-								        error={this.state.errors['username']}
+								<Input type="text"
+								       onChange={this._changeInput.bind(this)}
+								       required name="username"
+								       label="Username"
+								       maxLength={32}
+								       placeholder="Username"
+								       value={this.state.user.username}
+								       error={this.state.errors['username']}
 								/>
-								<Input  type="password"
-								        onChange={this._changeInput.bind(this)}
-								        label="Password"
-								        name="password"
-								        placeholder="Password"
-								        required={!this.state.user.id}
-								        value={this.state.user.password}
-								        error={this.state.errors['password']}
+								<Input type="password"
+								       onChange={this._changeInput.bind(this)}
+								       label="Password"
+								       name="password"
+								       placeholder="Password"
+								       required={!this.state.user.id}
+								       value={this.state.user.password}
+								       error={this.state.errors['password']}
 								/>
-								<Input  type="password"
-								        onChange={this._changeInput.bind(this)}
-								        label="Retype password"
-								        name="retype_password"
-								        placeholder="Retype password"
-								        required={!this.state.user.id}
-								        value={this.state.user.retype_password}
-								        error={this.state.errors['retype_password']}
+								<Input type="password"
+								       onChange={this._changeInput.bind(this)}
+								       label="Retype password"
+								       name="retype_password"
+								       placeholder="Retype password"
+								       required={!this.state.user.id}
+								       value={this.state.user.retype_password}
+								       error={this.state.errors['retype_password']}
 								/>
-								<Input  type="text"
-								        onChange={this._changeInput.bind(this)}
-								        required
-								        name="first_name"
-								        maxLength={32}
-								        label="First Name"
-								        placeholder="First Name"
-								        value={this.state.user.first_name}
-								        error={this.state.errors['first_name']}
+								<Input type="text"
+								       onChange={this._changeInput.bind(this)}
+								       required
+								       name="first_name"
+								       maxLength={32}
+								       label="First Name"
+								       placeholder="First Name"
+								       value={this.state.user.first_name}
+								       error={this.state.errors['first_name']}
 								/>
-								<Input  type="text"
-								        onChange={this._changeInput.bind(this)}
-								        required
-								        name="last_name"
-								        maxLength={32}
-								        label="Last name"
-								        placeholder="Last Name"
-								        value={this.state.user.last_name}
-								        error={this.state.errors['last_name']}
+								<Input type="text"
+								       onChange={this._changeInput.bind(this)}
+								       required
+								       name="last_name"
+								       maxLength={32}
+								       label="Last name"
+								       placeholder="Last Name"
+								       value={this.state.user.last_name}
+								       error={this.state.errors['last_name']}
 								/>
 								<Checkbox
-								        onChange={this._changeInput.bind(this)}
-								        name="type"
-								        label="Manager"
-								        placeholder="Manager"
-								        value={this.state.user.isManager()}
-								        error={this.state.errors['type']}
+									onChange={this._changeInput.bind(this)}
+									name="type"
+									label="Manager"
+									placeholder="Manager"
+									value={this.state.user.isManager()}
+									error={this.state.errors['type']}
 								/>
 								<div className="col-sm-9 col-sm-offset-3">
-									<button className="btn btn-success">{ this.state.user.id ? 'Save' : 'Create'}</button>
+									<button
+										className="btn btn-success">{ this.state.user.id ? 'Save' : 'Create'}</button>
 								</div>
 							</form>
 						</div>

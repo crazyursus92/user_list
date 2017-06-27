@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {BrowserRouter as Router, Redirect, Route, Switch} from "react-router-dom";
+import {BrowserRouter as Router, Route, Switch} from "react-router-dom";
 
 import userModel from "./../model/UserModel";
 import Login from "./Login";
@@ -19,37 +19,39 @@ class App extends Component {
 			current_user: {}
 		};
 
-		this._getCurrentUser();
 		this._listener();
+		this._getCurrentUser();
 	}
 
-	_listener(){
+	_listener() {
 		userModel.on('api-error', this._apiError.bind(this));
 		userModel.on('current-user-change-access', this._currentUserChange.bind(this));
 		userModel.on('current-user-change', this._getCurrentUser.bind(this));
 	}
 
-	_currentUserChange(){
+	_currentUserChange() {
 		if (this.state.current_user.id) {
 			this.refs.router.history.push('/list');
 			toast.info('your rights updated');
 		}
 	}
-	_apiError(e, data){
-		if(data.code === 403){
-			if(this.state.current_user.id) {
+
+	_apiError(e, data) {
+		if (data.code === 403) {
+			if (this.state.current_user.id) {
 				this.refs.router.history.push('/');
-			}else{
+			} else {
 				this.refs.router.history.push('/login');
 			}
 		}
 		this._getCurrentUser();
 	}
+
 	_getCurrentUser() {
 		userModel.getCurrentUser().then((user) => {
 			if (!user.id) {
 				this.refs.router.history.push('/login');
-			}else{
+			} else {
 				this.setState({
 					current_user: user
 				});
@@ -57,6 +59,7 @@ class App extends Component {
 			}
 		});
 	}
+
 	render() {
 
 		return (

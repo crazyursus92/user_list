@@ -11,17 +11,27 @@ export default class Login extends Component {
 			password: '',
 			errors: {}
 		};
+		this._isMounted = false;
+
+	}
+	_changeInput(e){
+		if(this._isMounted) {
+			let name = e.target.getAttribute('name');
+			this.setState({
+				[name]: e.target.value
+			});
+		}
+	}
+	componentDidMount(){
 		userModel.getCurrentUser().then((user) => {
 			if(user.id){
 				this.props.history.push('/');
 			}
 		});
+		this._isMounted = true;
 	}
-	_changeInput(e){
-		let name = e.target.getAttribute('name');
-		this.setState({
-			[name]: e.target.value
-		});
+	componentWillUnmount(){
+		this._isMounted = false;
 	}
 	submit(e) {
 		e.preventDefault();

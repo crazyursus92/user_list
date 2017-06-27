@@ -5,9 +5,53 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = [
 	{
-		entry: [
+		entry:[
 			__dirname + "/frontend_dev/scss/main.scss",
-			__dirname + "/frontend_dev/js/",
+		],
+		output: {
+			path: path.resolve(__dirname, "web/css"),
+			filename: "style.css",
+			publicPath: "/",
+			library: "app"
+		},
+		resolve: {
+			extensions: ['.scss'],
+		},
+
+		watch: ENV === 'dev',
+		watchOptions: {
+			aggregateTimeout: 100
+		},
+
+		devtool: ENV === 'dev' ? 'sourcemap' : null,
+		plugins: [
+			new webpack.NoEmitOnErrorsPlugin(),
+			new webpack.DefinePlugin({
+			}),
+			new ExtractTextPlugin({filename: 'style.css', allChunks: true})
+		],
+
+		module: {
+			loaders: [
+				{
+					test: /\.(png|jpg|svg|gif|ttf|eot|woff|woff2)$/,
+					loader: 'file-loader?name=[path][name].[ext]'
+				},
+				{
+					test: /\.scss/,
+					loader: ExtractTextPlugin.extract({
+						use: 'css-loader!autoprefixer-loader!resolve-url-loader!sass-loader?sourceMap'
+					})
+				},
+
+
+			],
+			//noParse
+		},
+	},
+	{
+		entry: [
+			__dirname +"/frontend_dev/js/",
 		],
 		output: {
 			path: path.resolve(__dirname, "web/js"),

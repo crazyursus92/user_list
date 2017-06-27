@@ -4,6 +4,7 @@ import UserToolbar from "./UserToolbar";
 import {Link} from "react-router-dom";
 import UserControls from "./UserControls";
 import userModel from "./../model/UserModel";
+import User from "./../model/User";
 
 
 export default class UserList extends Component {
@@ -17,39 +18,49 @@ export default class UserList extends Component {
 		};
 
 		this.limit = 10;
-
+		this.current_user = new User();
 		if (route_data.match.params.page) {
 			this.state.page = +route_data.match.params.page;
 		}
 		this._page = this.state.page;
 		this._updateList = this._updateList.bind(this);
-
-
+		this._getCurrentUser = this._getCurrentUser.bind(this);
 
 	}
+	_getCurrentUser(){
+		return userModel.getCurrentUser().then((user) => {
+			this.current_user = user;
+		});
+	}
 	componentDidMount(){
-		this._updateList();
+		this._getCurrentUser().then(() => {
+			this._updateList();
+		});
 		/**
 		 * Event на обнавления списка пользователей (для удаление пользователей)
 		 *
 		 */
 		userModel.on('users-update', this._updateList);
+		userModel.on('current-user-change', this._getCurrentUser);
 	}
 	componentWillUnmount(){
 		userModel.off('users-update', this._updateList);
+		userModel.off('current-user-change', this._getCurrentUser);
 	}
 	_updateList(page = null) {
-		page = page || this.state.page;
-		userModel.getList((page - 1) * this.limit).then((data) => {
-			if (data.status === 'success') {
-				if (this._validateResponse(data.response)) {
-					this.setState({
-						users: data.response.users,
-						count: +data.response.count
-					});
+		page = !isNaN(+page) && +page ? +page : this.state.page;
+		if(this.current_user.id) {
+			userModel.getList((page - 1) * this.limit).then((data) => {
+				if (data.status === 'success') {
+					if (this._validateResponse(data.response)) {
+						this.setState({
+							users: data.response.users,
+							count: +data.response.count
+						});
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	_validateResponse(data) {
@@ -90,7 +101,7 @@ export default class UserList extends Component {
 			this.setState({
 				page: next_page
 			});
-			this._updateList(next_page);
+			this._updateList(+next_page);
 		}
 	}
 

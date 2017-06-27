@@ -11,7 +11,8 @@ export default class Checkbox extends Input {
 				<div className={className}>
 					<div className="checkbox">
 						<label>
-							<input type="checkbox" name={this.props.name} value={this.props.value} onChange={this.props.onChange}
+							<input type="checkbox" name={this.props.name} value={this.props.value}
+							       onChange={this.props.onChange}
 							       checked={!!this.props.value}/>
 							{this.props.label}
 						</label>
