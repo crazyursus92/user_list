@@ -21,7 +21,7 @@ export default class UserList extends Component {
 		if (route_data.match.params.page) {
 			this.state.page = +route_data.match.params.page;
 		}
-		this._current_state_page = this.state.page;
+		this._page = this.state.page;
 		this._updateList = this._updateList.bind(this);
 
 
@@ -38,8 +38,9 @@ export default class UserList extends Component {
 	componentWillUnmount(){
 		userModel.off('users-update', this._updateList);
 	}
-	_updateList() {
-		userModel.getList((this.state.page - 1) * this.limit).then((data) => {
+	_updateList(page = null) {
+		page = page || this.state.page;
+		userModel.getList((page - 1) * this.limit).then((data) => {
 			if (data.status === 'success') {
 				if (this._validateResponse(data.response)) {
 					this.setState({
@@ -82,19 +83,20 @@ export default class UserList extends Component {
 	/**
 	 * обновляем список если обновилось состояние страницы
 	 */
-	componentDidUpdate() {
-		if (this._current_state_page !== this.state.page) {
-			this._current_state_page = this.state.page;
-			this._updateList();
+	componentWillUpdate(nextProps) {
+		let next_page = nextProps.match.params.page ? +nextProps.match.params.page : 1;
+		if (this._page !== next_page) {
+			this._page = next_page;
+			this.setState({
+				page: next_page
+			});
+			this._updateList(next_page);
 		}
 	}
 
 	_changePage(e) {
 		e.preventDefault();
 		let page = $(e.target).parent('li').data('page');
-		this.setState({
-			page: page
-		});
 		this.props.history.push('/list/' + page);
 
 	}

@@ -24221,6 +24221,7 @@ var Login = function (_Component) {
 		value: function submit(e) {
 			var _this2 = this;
 
+			e.preventDefault();
 			_UserModel2.default.login(this.state.username, this.state.password).then(function (data) {
 				if (data && data.status === 'success') {
 					_this2.props.history.push('/');
@@ -24768,7 +24769,7 @@ var UserList = function (_Component) {
 		if (route_data.match.params.page) {
 			_this.state.page = +route_data.match.params.page;
 		}
-		_this._current_state_page = _this.state.page;
+		_this._page = _this.state.page;
 		_this._updateList = _this._updateList.bind(_this);
 
 		return _this;
@@ -24794,7 +24795,10 @@ var UserList = function (_Component) {
 		value: function _updateList() {
 			var _this2 = this;
 
-			_UserModel2.default.getList((this.state.page - 1) * this.limit).then(function (data) {
+			var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+			page = page || this.state.page;
+			_UserModel2.default.getList((page - 1) * this.limit).then(function (data) {
 				if (data.status === 'success') {
 					if (_this2._validateResponse(data.response)) {
 						_this2.setState({
@@ -24845,11 +24849,15 @@ var UserList = function (_Component) {
    */
 
 	}, {
-		key: "componentDidUpdate",
-		value: function componentDidUpdate() {
-			if (this._current_state_page !== this.state.page) {
-				this._current_state_page = this.state.page;
-				this._updateList();
+		key: "componentWillUpdate",
+		value: function componentWillUpdate(nextProps) {
+			var next_page = nextProps.match.params.page ? +nextProps.match.params.page : 1;
+			if (this._page !== next_page) {
+				this._page = next_page;
+				this.setState({
+					page: next_page
+				});
+				this._updateList(next_page);
 			}
 		}
 	}, {
@@ -24857,9 +24865,6 @@ var UserList = function (_Component) {
 		value: function _changePage(e) {
 			e.preventDefault();
 			var page = (0, _jquery2.default)(e.target).parent('li').data('page');
-			this.setState({
-				page: page
-			});
 			this.props.history.push('/list/' + page);
 		}
 	}, {

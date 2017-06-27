@@ -24,6 +24,7 @@ export default class Login extends Component {
 		});
 	}
 	submit(e) {
+		e.preventDefault();
 		userModel.login(this.state.username, this.state.password).then((data) => {
 			if(data && data.status === 'success') {
 				this.props.history.push('/');
