@@ -1,23 +1,36 @@
 import React, {Component} from "react";
 import userModel from "./../model/UserModel";
-import {Form} from "formsy-react";
-import {Input} from "formsy-react-components";
+import Input from './Input';
 
 export default class Login extends Component {
 
 	constructor() {
 		super();
+		this.state = {
+			username: '',
+			password: '',
+			errors: {}
+		};
 		userModel.getCurrentUser().then((user) => {
 			if(user.id){
 				this.props.history.push('/');
 			}
 		});
 	}
-
-	submit(form_data) {
-		userModel.login(form_data.username, form_data.password).then((data) => {
+	_changeInput(e){
+		let name = e.target.getAttribute('name');
+		this.setState({
+			[name]: e.target.value
+		});
+	}
+	submit(e) {
+		userModel.login(this.state.username, this.state.password).then((data) => {
 			if(data && data.status === 'success') {
 				this.props.history.push('/');
+			}else if(data.status === 'error' && data.code === 200){
+				this.setState({
+					errors: data.response
+				});
 			}
 		});
 	}
@@ -29,15 +42,29 @@ export default class Login extends Component {
 					<div className="panel-heading text-center">Authorization</div>
 
 					<div className="panel-body ">
-						<Form onSubmit={this.submit.bind(this)}>
-							<Input ref="username" type="text" className="form-control" required name="username"
-							       label="Username" placeholder="Username"/>
-							<Input ref="password" type="password" className="form-control" required name="password"
-							       label="Password" placeholder="Password"/>
+						<form className="form-horizontal" onSubmit={this.submit.bind(this)}>
+							<Input  type="text"
+							        onChange={this._changeInput.bind(this)}
+							        required name="username"
+							        label="Username"
+							        maxLength={32}
+							        placeholder="Username"
+							        value={this.state.username}
+							        error={this.state.errors['username']}
+							/>
+							<Input  type="password"
+							        onChange={this._changeInput.bind(this)}
+							        label="Password"
+							        name="password"
+							        placeholder="Password"
+							        required
+							        value={this.state.password}
+							        error={this.state.errors['password']}
+							/>
 							<div className="col-sm-9 col-sm-offset-3">
 								<button className="btn btn-success">Send</button>
 							</div>
-						</Form>
+						</form>
 					</div>
 				</div>
 			</div>

@@ -102,7 +102,6 @@ export default class UserPage extends Component {
 					user: new User(data.response),
 					errors: {}
 				});
-				this._updateInputs(this.state.user);
 				toast.success('User updated');
 
 			} else if (data.status === 'error' && data.code === 200) {
