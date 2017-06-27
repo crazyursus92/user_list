@@ -98,6 +98,10 @@ class UserModel {
 		$(this).on(event, callback);
 	}
 
+	off(event, callback){
+		$(this).off(event, callback);
+	}
+
 	trigger(event, data) {
 		$(this).trigger(event, data);
 	}

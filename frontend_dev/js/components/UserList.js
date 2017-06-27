@@ -22,14 +22,22 @@ export default class UserList extends Component {
 			this.state.page = +route_data.match.params.page;
 		}
 		this._current_state_page = this.state.page;
+		this._updateList = this._updateList.bind(this);
+
+
+
+	}
+	componentDidMount(){
+		this._updateList();
 		/**
 		 * Event на обнавления списка пользователей (для удаление пользователей)
 		 *
 		 */
-		userModel.on('users-update', this._updateList.bind(this));
-		this._updateList();
+		userModel.on('users-update', this._updateList);
 	}
-
+	componentWillUnmount(){
+		userModel.off('users-update', this._updateList);
+	}
 	_updateList() {
 		userModel.getList((this.state.page - 1) * this.limit).then((data) => {
 			if (data.status === 'success') {

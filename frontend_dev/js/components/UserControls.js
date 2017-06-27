@@ -12,18 +12,16 @@ export  default  class UserControls extends Component {
 			current_user: new User({})
 		};
 
-
+		this._getCurrentUser = this._getCurrentUser.bind(this);
 	}
 
-	componentDidMount() {
+	componentDidMount(){
 		this._getCurrentUser();
-		this._listener();
+		userModel.on('current-user-change', this._getCurrentUser);
 	}
-
-	_listener() {
-		userModel.on('current-user-change', this._getCurrentUser.bind(this));
+	componentWillUnmount(){
+		userModel.off('current-user-change', this._getCurrentUser);
 	}
-
 	_getCurrentUser() {
 		userModel.getCurrentUser().then((user) => {
 			this.setState({

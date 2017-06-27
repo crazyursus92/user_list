@@ -109,6 +109,7 @@ export default class UserPage extends Component {
 					user: new User(data.response),
 					errors: {}
 				});
+				this._updateInputs(this.state.user);
 				toast.success('User updated');
 
 			} else if (data.status === 'error' && data.code === 200) {
@@ -122,7 +123,7 @@ export default class UserPage extends Component {
 	}
 	_create (values){
 		userModel.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((data) => {
-			if(data.status === 'error' && data.status === 200){
+			if(data.status === 'error' && data.code === 200){
 				this.setState({
 					errors: data.response
 				});
@@ -135,7 +136,15 @@ export default class UserPage extends Component {
 			}
 		});
 	}
-
+	_updateInputs(user){
+		this.refs.username.setValue(user.username);
+		this.refs.password.setValue('');
+		this.refs.retype_password.setValue('');
+		this.refs.first_name.setValue(user.first_name);
+		this.refs.last_name.setValue(user.last_name);
+		this.refs.type.setValue(user.isManager());
+		this.refs.form.reset({});
+	}
 	_validatePassword(password, retypePassword) {
 		let state;
 		if (this.state.user.id) {
@@ -192,7 +201,7 @@ export default class UserPage extends Component {
 								<Checkbox ref="type" type="checkbox"  name="type" label="Manager"
 								          value={this.state.user.isManager()}/>
 								<div className="col-sm-9 col-sm-offset-3">
-									<button className="btn btn-success">Send</button>
+									<button className="btn btn-success">{ this.state.user.id ? 'Save' : 'Create'}</button>
 								</div>
 							</Form>
 						</div>

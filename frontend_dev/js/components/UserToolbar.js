@@ -11,15 +11,14 @@ export default class UserToolbar extends Component {
 		this.state = {
 			current_user: new User({})
 		};
-
-
+		this._getCurrentUser = this._getCurrentUser.bind(this);
 	}
 	componentDidMount(){
 		this._getCurrentUser();
-		this._listener();
+		userModel.on('current-user-change', this._getCurrentUser);
 	}
-	_listener(){
-		userModel.on('current-user-change', this._getCurrentUser.bind(this));
+	componentWillUnmount(){
+		userModel.off('current-user-change', this._getCurrentUser);
 	}
 
 	_getCurrentUser() {
