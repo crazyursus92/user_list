@@ -13,7 +13,7 @@ class m170622_102446_start extends Migration
             'first_name' => $this->string(255)->notNull(),
             'last_name' => $this->string(255)->notNull(),
             'password' => $this->string(255)->notNull(),
-            'type' => $this->integer(11)->defaultValue(\app\models\Users::TYPE_USER)
+            'type' => $this->integer(11)->notNull()->defaultValue(\app\models\Users::TYPE_USER)
         ]);
         $this->createIndex('users_username_uindex', 'users', 'username', true);
         $this->insert('users', [

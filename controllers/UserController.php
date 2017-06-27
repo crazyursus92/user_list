@@ -76,6 +76,7 @@ class UserController extends Controller
     }
 
     public function actionList(){
+
         return $this->response($this->state->getList());
     }
 

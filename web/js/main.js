@@ -26173,41 +26173,56 @@ var UserPage = function (_Component) {
 		};
 		_this.new_user_id = 0;
 		_this.current_user = new _User2.default();
+
 		if (route_data.match.params.id && route_data.match.params.id !== 'create') {
-			var id = +route_data.match.params.id;
-			_this.new_user_id = id;
-			_this.state = {
-				user: new _User2.default(),
-				errors: {},
-				required: 'required'
-			};
-			_this._getUser(id);
+			_this.new_user_id = +route_data.match.params.id;
 		}
+
+		_this._currentUserAccess = _this._currentUserAccess.bind(_this);
 
 		return _this;
 	}
 
 	(0, _createClass3.default)(UserPage, [{
-		key: '_getUser',
-		value: function _getUser(id) {
+		key: 'componentDidMount',
+		value: function componentDidMount() {
+			this._currentUserAccess();
+			_UserModel2.default.on('current-user-change', this._currentUserAccess);
+		}
+	}, {
+		key: 'componentWillUnmount',
+		value: function componentWillUnmount() {
+			_UserModel2.default.off('current-user-change', this._currentUserAccess);
+		}
+	}, {
+		key: '_currentUserAccess',
+		value: function _currentUserAccess() {
 			var _this2 = this;
 
 			_UserModel2.default.getCurrentUser().then(function (current_user) {
-				_this2.current_user = current_user;
-				if (_this2.current_user.id === +id) {
-					_Toast2.default.error('You can not edit yourself');
-					return {};
-				} else {
-					return _UserModel2.default.get(id);
-				}
-			}).then(function (data) {
-
-				if (data.status === 'success') {
-					_this2.setState({ user: new _User2.default(data.response), errors: {} });
-				} else if (data.code === 200) {
-					_this2.setState({ errors: data.response });
-				} else {
+				if (!current_user.isManager()) {
+					_Toast2.default.error('Forbidden');
 					_this2.props.history.push('/');
+				} else if (current_user.id === _this2.new_user_id) {
+					_Toast2.default.error('You can not edit yourself');
+					_this2.props.history.push('/');
+				} else if (_this2.new_user_id !== 'create') {
+					_this2._getUser(_this2.new_user_id);
+				}
+			});
+		}
+	}, {
+		key: '_getUser',
+		value: function _getUser(id) {
+			var _this3 = this;
+
+			_UserModel2.default.get(id).then(function (data) {
+				if (data.status === 'success') {
+					_this3.setState({ user: new _User2.default(data.response), errors: {} });
+				} else if (data.code === 200) {
+					_this3.setState({ errors: data.response });
+				} else {
+					_this3.props.history.push('/');
 				}
 			});
 		}
@@ -26252,40 +26267,40 @@ var UserPage = function (_Component) {
 	}, {
 		key: '_update',
 		value: function _update(values) {
-			var _this3 = this;
+			var _this4 = this;
 
 			_UserModel2.default.update(this.state.user.id, values.first_name, values.last_name, values.username, values.password || null, values.type || null).then(function (data) {
 				if (data.status === 'success') {
-					_this3.setState({
+					_this4.setState({
 						user: new _User2.default(data.response),
 						errors: {}
 					});
-					_this3._updateInputs(_this3.state.user);
+					_this4._updateInputs(_this4.state.user);
 					_Toast2.default.success('User updated');
 				} else if (data.status === 'error' && data.code === 200) {
-					_this3.setState({
+					_this4.setState({
 						errors: data.response
 					});
 				} else {
-					_this3.props.history.push('/');
+					_this4.props.history.push('/');
 				}
 			});
 		}
 	}, {
 		key: '_create',
 		value: function _create(values) {
-			var _this4 = this;
+			var _this5 = this;
 
 			_UserModel2.default.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then(function (data) {
 				if (data.status === 'error' && data.code === 200) {
-					_this4.setState({
+					_this5.setState({
 						errors: data.response
 					});
 				} else {
-					_this4.setState({
+					_this5.setState({
 						errors: {}
 					});
-					_this4.props.history.push('/list');
+					_this5.props.history.push('/list');
 					_Toast2.default.success('User created');
 				}
 			});

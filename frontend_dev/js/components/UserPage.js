@@ -17,30 +17,38 @@ export default class UserPage extends Component {
 		};
 		this.new_user_id = 0;
 		this.current_user = new User();
+
 		if (route_data.match.params.id && route_data.match.params.id !== 'create') {
-			let id = +route_data.match.params.id;
-			this.new_user_id = id;
-			this.state = {
-				user: new User(),
-				errors: {},
-				required: 'required'
-			};
-			this._getUser(id);
+			this.new_user_id = +route_data.match.params.id;
 		}
+
+		this._currentUserAccess = this._currentUserAccess.bind(this);
 
 	}
 
-	_getUser (id){
+	componentDidMount(){
+		this._currentUserAccess();
+		userModel.on('current-user-change', this._currentUserAccess);
+	}
+	componentWillUnmount(){
+		userModel.off('current-user-change', this._currentUserAccess);
+	}
+	_currentUserAccess(){
 		userModel.getCurrentUser().then((current_user) => {
-			this.current_user = current_user;
-			if(this.current_user.id === +id){
+			if(!current_user.isManager()){
+				toast.error('Forbidden');
+				this.props.history.push('/');
+			}else if(current_user.id === this.new_user_id){
 				toast.error('You can not edit yourself');
-				return {};
-			}else{
-				return userModel.get(id);
+				this.props.history.push('/');
+			}else if(this.new_user_id !== 'create'){
+				this._getUser(this.new_user_id);
 			}
-		}).then((data) => {
+		});
+	}
 
+	_getUser (id){
+		userModel.get(id).then((data) => {
 			if(data.status === 'success') {
 				this.setState({user: new User(data.response), errors: {}});
 			}else if(data.code === 200){
