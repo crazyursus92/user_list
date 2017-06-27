@@ -270,5 +270,9 @@ body {
   right: 15px;
 }
 
+.form-group.required label:after {
+  content: '*';
+}
+
 
 /*# sourceMappingURL=style.css.map*/

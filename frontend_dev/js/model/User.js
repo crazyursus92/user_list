@@ -7,6 +7,7 @@ export  default  class User {
 		this.first_name = data.first_name;
 		this.last_name = data.last_name;
 		this.password = data.password;
+		this.retype_password = '';
 		this.type = !isNaN(+data.type) ? +data.type : 0;
 		this.username = data.username;
 	}
@@ -43,5 +44,16 @@ export  default  class User {
 		return this.id && this.id === user.id && this.type !== user.type;
 	}
 
+	toJSON(){
+		return {
+			id: this.id,
+			password: this.password,
+			retype_password: this.retype_password,
+			first_name: this.first_name,
+			last_name: this.last_name,
+			type: this.type,
+			username: this.username
+		}
+	}
 
 }

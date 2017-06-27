@@ -4450,22 +4450,23 @@ var User = function () {
 		this.first_name = data.first_name;
 		this.last_name = data.last_name;
 		this.password = data.password;
+		this.retype_password = '';
 		this.type = !isNaN(+data.type) ? +data.type : 0;
 		this.username = data.username;
 	}
 
 	(0, _createClass3.default)(User, [{
-		key: "isManager",
+		key: 'isManager',
 		value: function isManager() {
 			return this.type === 1;
 		}
 	}, {
-		key: "isUser",
+		key: 'isUser',
 		value: function isUser() {
 			return this.type === 2;
 		}
 	}, {
-		key: "isGuest",
+		key: 'isGuest',
 		value: function isGuest() {
 			return this.type === 0 || !this.type;
 		}
@@ -4476,7 +4477,7 @@ var User = function () {
    */
 
 	}, {
-		key: "isEquals",
+		key: 'isEquals',
 		value: function isEquals() {
 			var user = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -4489,11 +4490,24 @@ var User = function () {
    */
 
 	}, {
-		key: "isChangeAccess",
+		key: 'isChangeAccess',
 		value: function isChangeAccess() {
 			var user = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
 			return this.id && this.id === user.id && this.type !== user.type;
+		}
+	}, {
+		key: 'toJSON',
+		value: function toJSON() {
+			return {
+				id: this.id,
+				password: this.password,
+				retype_password: this.retype_password,
+				first_name: this.first_name,
+				last_name: this.last_name,
+				type: this.type,
+				username: this.username
+			};
 		}
 	}]);
 	return User;
@@ -26090,10 +26104,6 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _keys = __webpack_require__(187);
-
-var _keys2 = _interopRequireDefault(_keys);
-
 var _getPrototypeOf = __webpack_require__(14);
 
 var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
@@ -26122,9 +26132,13 @@ var _underscore = __webpack_require__(372);
 
 var _underscore2 = _interopRequireDefault(_underscore);
 
-var _formsyReact = __webpack_require__(22);
+var _Input = __webpack_require__(381);
 
-var _formsyReactComponents = __webpack_require__(135);
+var _Input2 = _interopRequireDefault(_Input);
+
+var _Checkbox = __webpack_require__(382);
+
+var _Checkbox2 = _interopRequireDefault(_Checkbox);
 
 var _UserToolbar = __webpack_require__(111);
 
@@ -26154,16 +26168,18 @@ var UserPage = function (_Component) {
 
 		_this.state = {
 			user: new _User2.default(),
-			errors: {}
+			errors: {},
+			required: 'required'
 		};
 		_this.next_step_user_id = 0;
-		_this.reset_form = false;
+
 		if (route_data.match.params.id && route_data.match.params.id !== 'create') {
 			var id = +route_data.match.params.id;
 			_this.next_step_user_id = id;
 			_this.state = {
 				user: new _User2.default(),
-				errors: {}
+				errors: {},
+				required: 'required'
 			};
 			_this._getUser(id);
 		}
@@ -26171,7 +26187,7 @@ var UserPage = function (_Component) {
 	}
 
 	(0, _createClass3.default)(UserPage, [{
-		key: "_getUser",
+		key: '_getUser',
 		value: function _getUser(id) {
 			var _this2 = this;
 
@@ -26193,9 +26209,8 @@ var UserPage = function (_Component) {
    */
 
 	}, {
-		key: "componentWillUpdate",
+		key: 'componentWillUpdate',
 		value: function componentWillUpdate(nextProps, nextState) {
-			window.uprefs = this.refs;
 			var new_id = !isNaN(+nextProps.match.params.id) ? +nextProps.match.params.id : nextProps.match.params.id;
 			if (nextProps.match.params.id && new_id !== this.next_step_user_id) {
 				this.next_step_user_id = new_id;
@@ -26204,7 +26219,6 @@ var UserPage = function (_Component) {
 					this.setState({
 						user: user
 					});
-					this.reset_form = true;
 				} else {
 					this._getUser(new_id);
 				}
@@ -26216,40 +26230,24 @@ var UserPage = function (_Component) {
    */
 
 	}, {
-		key: "componentDidUpdate",
+		key: 'componentDidUpdate',
 		value: function componentDidUpdate() {
 			var _this3 = this;
 
 			if (this.reset_form && this.refs) {
 				this.reset_form = false;
 				setTimeout(function () {
-					if (_this3.next_step_user_id === 'create') {
-						_this3.refs.username.setValue('');
-						_this3.refs.password.setValue('');
-						_this3.refs.retype_password.setValue('');
-						_this3.refs.first_name.setValue('');
-						_this3.refs.last_name.setValue('');
-						_this3.refs.type.setValue(false);
-						_this3.refs.form.reset({});
-					}
+					if (_this3.next_step_user_id === 'create') {}
 				}, 100);
 			}
 		}
 	}, {
-		key: "_submit",
-		value: function _submit(values, reset, invalid) {
+		key: '_submit',
+		value: function _submit(e) {
+			e.preventDefault();
+			var values = this.state.user.toJSON();
+			if (this._validatePassword(values.password, values.retype_password)) {
 
-			var validate_password = this._validatePassword(values.password, values.retype_password);
-
-			if (_underscore2.default.isString(validate_password)) {
-				invalid({
-					retype_password: validate_password
-				});
-				return;
-			}
-
-			if (validate_password) {
-				values.type = values.type ? 1 : 2;
 				if (this.state.user.id) {
 					this._update(values);
 				} else {
@@ -26258,7 +26256,7 @@ var UserPage = function (_Component) {
 			}
 		}
 	}, {
-		key: "_update",
+		key: '_update',
 		value: function _update(values) {
 			var _this4 = this;
 
@@ -26280,7 +26278,7 @@ var UserPage = function (_Component) {
 			});
 		}
 	}, {
-		key: "_create",
+		key: '_create',
 		value: function _create(values) {
 			var _this5 = this;
 
@@ -26293,24 +26291,13 @@ var UserPage = function (_Component) {
 					_this5.setState({
 						errors: {}
 					});
-					_this5.props.history.push('/user/' + data.response.id);
+					_this5.props.history.push('/list');
 					_Toast2.default.success('User created');
 				}
 			});
 		}
 	}, {
-		key: "_updateInputs",
-		value: function _updateInputs(user) {
-			this.refs.username.setValue(user.username);
-			this.refs.password.setValue('');
-			this.refs.retype_password.setValue('');
-			this.refs.first_name.setValue(user.first_name);
-			this.refs.last_name.setValue(user.last_name);
-			this.refs.type.setValue(user.isManager());
-			this.refs.form.reset({});
-		}
-	}, {
-		key: "_validatePassword",
+		key: '_validatePassword',
 		value: function _validatePassword(password, retypePassword) {
 			var state = void 0;
 			if (this.state.user.id) {
@@ -26322,73 +26309,110 @@ var UserPage = function (_Component) {
 				state = !!password && password === retypePassword;
 			}
 			if (!state) {
-				return 'Passwords do not match';
+				this.setState({
+					errors: {
+						retype_password: 'Passwords do not match'
+					}
+				});
 			}
 			return state;
 		}
 	}, {
-		key: "_isErrors",
-		value: function _isErrors() {
-			return !_underscore2.default.isEmpty(this.state.errors);
+		key: '_changeInput',
+		value: function _changeInput(e) {
+			var name = e.target.getAttribute('name'),
+			    user = this.state.user;
+
+			if (name === 'type') {
+				user[name] = !e.target.value || e.target.value === 'false' ? 1 : 2;
+			} else {
+				user[name] = e.target.value;
+			}
+
+			this.setState({
+				user: user
+			});
 		}
 	}, {
-		key: "render",
+		key: 'render',
 		value: function render() {
-			var _this6 = this;
-
 			return _react2.default.createElement(
-				"div",
+				'div',
 				null,
 				_react2.default.createElement(_UserToolbar2.default, null),
 				_react2.default.createElement(
-					"div",
-					{ className: "col-md-offset-3 col-md-6" },
+					'div',
+					{ className: 'col-md-offset-3 col-md-6' },
 					_react2.default.createElement(
-						"div",
-						{ className: "panel panel-default" },
+						'div',
+						{ className: 'panel panel-default' },
 						_react2.default.createElement(
-							"div",
-							{ className: "panel-body" },
+							'div',
+							{ className: 'panel-body' },
 							_react2.default.createElement(
-								"div",
-								{ className: "panel panel-default", hidden: !this._isErrors() },
+								'form',
+								{ className: 'form-horizontal', onSubmit: this._submit.bind(this) },
+								_react2.default.createElement(_Input2.default, { type: 'text',
+									onChange: this._changeInput.bind(this),
+									required: true, name: 'username',
+									label: 'Username',
+									maxLength: 32,
+									placeholder: 'Username',
+									value: this.state.user.username,
+									error: this.state.errors['username']
+								}),
+								_react2.default.createElement(_Input2.default, { type: 'password',
+									onChange: this._changeInput.bind(this),
+									label: 'Password',
+									name: 'password',
+									placeholder: 'Password',
+									required: !this.state.user.id,
+									value: this.state.user.password,
+									error: this.state.errors['password']
+								}),
+								_react2.default.createElement(_Input2.default, { type: 'password',
+									onChange: this._changeInput.bind(this),
+									label: 'Retype password',
+									name: 'retype_password',
+									placeholder: 'Retype password',
+									required: !this.state.user.id,
+									value: this.state.user.retype_password,
+									error: this.state.errors['retype_password']
+								}),
+								_react2.default.createElement(_Input2.default, { type: 'text',
+									onChange: this._changeInput.bind(this),
+									required: true,
+									name: 'first_name',
+									maxLength: 32,
+									label: 'First Name',
+									placeholder: 'First Name',
+									value: this.state.user.first_name,
+									error: this.state.errors['first_name']
+								}),
+								_react2.default.createElement(_Input2.default, { type: 'text',
+									onChange: this._changeInput.bind(this),
+									required: true,
+									name: 'last_name',
+									maxLength: 32,
+									label: 'Last name',
+									placeholder: 'Last Name',
+									value: this.state.user.last_name,
+									error: this.state.errors['last_name']
+								}),
+								_react2.default.createElement(_Checkbox2.default, {
+									onChange: this._changeInput.bind(this),
+									name: 'type',
+									label: 'Manager',
+									placeholder: 'Manager',
+									value: this.state.user.isManager(),
+									error: this.state.errors['type']
+								}),
 								_react2.default.createElement(
-									"div",
-									{ className: "panel-body danger" },
+									'div',
+									{ className: 'col-sm-9 col-sm-offset-3' },
 									_react2.default.createElement(
-										"ol",
-										null,
-										(0, _keys2.default)(this.state.errors).map(function (item) {
-											return _react2.default.createElement(
-												"li",
-												{ key: item },
-												_this6.state.errors[item]
-											);
-										})
-									)
-								)
-							),
-							_react2.default.createElement(
-								_formsyReact.Form,
-								{ onSubmit: this._submit.bind(this), ref: "form" },
-								_react2.default.createElement(_formsyReactComponents.Input, { ref: "username", type: "text", className: "form-control", required: true, name: "username", label: "Username",
-									placeholder: "Username", value: this.state.user.username }),
-								_react2.default.createElement(_formsyReactComponents.Input, { ref: "password", type: "password", className: "form-control", label: "Password", name: "password",
-									placeholder: "Password", required: !this.state.user.id }),
-								_react2.default.createElement(_formsyReactComponents.Input, { ref: "retype_password", type: "password", className: "form-control", label: "Retype password",
-									name: "retype_password", placeholder: "Retype password", required: !this.state.user.id }),
-								_react2.default.createElement(_formsyReactComponents.Input, { ref: "first_name", type: "text", className: "form-control", required: true, name: "first_name",
-									label: "First Name", placeholder: "First Name", value: this.state.user.first_name }),
-								_react2.default.createElement(_formsyReactComponents.Input, { ref: "last_name", type: "text", className: "form-control", required: true, name: "last_name", label: "Last name",
-									placeholder: "Last Name", value: this.state.user.last_name }),
-								_react2.default.createElement(_formsyReactComponents.Checkbox, { ref: "type", type: "checkbox", name: "type", label: "Manager",
-									value: this.state.user.isManager() }),
-								_react2.default.createElement(
-									"div",
-									{ className: "col-sm-9 col-sm-offset-3" },
-									_react2.default.createElement(
-										"button",
-										{ className: "btn btn-success" },
+										'button',
+										{ className: 'btn btn-success' },
 										this.state.user.id ? 'Save' : 'Create'
 									)
 								)
@@ -26822,12 +26846,7 @@ module.exports = { "default": __webpack_require__(192), __esModule: true };
 module.exports = { "default": __webpack_require__(193), __esModule: true };
 
 /***/ }),
-/* 187 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(195), __esModule: true };
-
-/***/ }),
+/* 187 */,
 /* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -26989,13 +27008,7 @@ __webpack_require__(228);
 module.exports = __webpack_require__(11).Object.getPrototypeOf;
 
 /***/ }),
-/* 195 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(229);
-module.exports = __webpack_require__(11).Object.keys;
-
-/***/ }),
+/* 195 */,
 /* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -27628,20 +27641,7 @@ __webpack_require__(124)('getPrototypeOf', function(){
 });
 
 /***/ }),
-/* 229 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 19.1.2.14 Object.keys(O)
-var toObject = __webpack_require__(82)
-  , $keys    = __webpack_require__(50);
-
-__webpack_require__(124)('keys', function(){
-  return function keys(it){
-    return $keys(toObject(it));
-  };
-});
-
-/***/ }),
+/* 229 */,
 /* 230 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44344,6 +44344,190 @@ module.exports = function() {
 __webpack_require__(171);
 module.exports = __webpack_require__(170);
 
+
+/***/ }),
+/* 376 */,
+/* 377 */,
+/* 378 */,
+/* 379 */,
+/* 380 */,
+/* 381 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _getPrototypeOf = __webpack_require__(14);
+
+var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+var _classCallCheck2 = __webpack_require__(8);
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = __webpack_require__(9);
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _possibleConstructorReturn2 = __webpack_require__(16);
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+var _inherits2 = __webpack_require__(15);
+
+var _inherits3 = _interopRequireDefault(_inherits2);
+
+var _react = __webpack_require__(2);
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var input_id = 0;
+
+var Input = function (_Component) {
+	(0, _inherits3.default)(Input, _Component);
+
+	function Input(props) {
+		(0, _classCallCheck3.default)(this, Input);
+
+		var _this = (0, _possibleConstructorReturn3.default)(this, (Input.__proto__ || (0, _getPrototypeOf2.default)(Input)).call(this, props));
+
+		_this.id = input_id++;
+		return _this;
+	}
+
+	(0, _createClass3.default)(Input, [{
+		key: 'render',
+		value: function render() {
+			var className = 'form-group ' + (this.props.className || ' ') + (this.props.required ? ' required ' : '') + (this.props.error ? 'has-error' : '');
+			return _react2.default.createElement(
+				'div',
+				{ className: className },
+				_react2.default.createElement(
+					'label',
+					{ htmlFor: 'control-' + this.id, className: 'col-sm-3 control-label' },
+					this.props.label
+				),
+				_react2.default.createElement(
+					'div',
+					{ className: 'col-sm-9' },
+					_react2.default.createElement('input', { type: this.props.type,
+						name: this.props.name,
+						className: 'form-control',
+						id: 'control-' + this.id,
+						onChange: this.props.onChange,
+						required: !!this.props.required,
+						maxLength: this.props.maxLength,
+						placeholder: this.props.placeholder,
+						value: this.props.value }),
+					_react2.default.createElement(
+						'span',
+						{ className: 'help-block' },
+						this.props.error
+					)
+				)
+			);
+		}
+	}]);
+	return Input;
+}(_react.Component);
+
+Input.defaultProps = {
+	required: false,
+	placeholder: '',
+	name: '',
+	label: '',
+	type: 'text',
+	value: '',
+	error: '',
+	maxLength: 255
+};
+
+exports.default = Input;
+
+/***/ }),
+/* 382 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _getPrototypeOf = __webpack_require__(14);
+
+var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+var _classCallCheck2 = __webpack_require__(8);
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = __webpack_require__(9);
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _possibleConstructorReturn2 = __webpack_require__(16);
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+var _inherits2 = __webpack_require__(15);
+
+var _inherits3 = _interopRequireDefault(_inherits2);
+
+var _react = __webpack_require__(2);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _Input2 = __webpack_require__(381);
+
+var _Input3 = _interopRequireDefault(_Input2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Checkbox = function (_Input) {
+	(0, _inherits3.default)(Checkbox, _Input);
+
+	function Checkbox() {
+		(0, _classCallCheck3.default)(this, Checkbox);
+		return (0, _possibleConstructorReturn3.default)(this, (Checkbox.__proto__ || (0, _getPrototypeOf2.default)(Checkbox)).apply(this, arguments));
+	}
+
+	(0, _createClass3.default)(Checkbox, [{
+		key: "render",
+		value: function render() {
+			var className = 'col-sm-9 pull-right ' + (this.props.error ? 'has-error' : '');
+			return _react2.default.createElement(
+				"div",
+				{ className: "form-group" },
+				_react2.default.createElement(
+					"div",
+					{ className: className },
+					_react2.default.createElement(
+						"div",
+						{ className: "checkbox" },
+						_react2.default.createElement(
+							"label",
+							null,
+							_react2.default.createElement("input", { type: "checkbox", name: this.props.name, value: this.props.value, onChange: this.props.onChange,
+								checked: !!this.props.value }),
+							this.props.label
+						)
+					)
+				)
+			);
+		}
+	}]);
+	return Checkbox;
+}(_Input3.default);
+
+exports.default = Checkbox;
 
 /***/ })
 /******/ ]);
