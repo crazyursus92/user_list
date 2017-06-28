@@ -18,6 +18,11 @@ export default class UserPage extends Component {
 		this._isMounted = false;
 		if (route_data.match.params.id && route_data.match.params.id !== 'create') {
 			this.new_user_id = +route_data.match.params.id;
+		}else if(route_data.match.params.id === 'create'){
+			this.new_user_id = route_data.match.params.id;
+		}else{
+			toast.error('Page not found');
+			this.props.history.push('/');
 		}
 
 		this._currentUserAccess = this._currentUserAccess.bind(this);
@@ -129,6 +134,11 @@ export default class UserPage extends Component {
 		});
 	}
 
+	/**
+	 *
+	 * @param {} values
+	 * @private
+	 */
 	_create(values) {
 		userModel.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((data) => {
 			if (data.status === 'error' && data.code === 200) {
@@ -145,6 +155,16 @@ export default class UserPage extends Component {
 		});
 	}
 
+	/**
+	 * Валидация пароля
+	 * Если мы создаем пользователя то проверяем пароли на равенство.
+	 * Если мы обновляем пользователя то тогда проверяем на то что пароль есть (изменился) и пароли равны.
+	 * В случие отрицательного результата проверки выводим сообщение
+	 * @param password
+	 * @param retypePassword
+	 * @return {Boolean}
+	 * @private
+	 */
 	_validatePassword(password, retypePassword) {
 		let state;
 		if (this.state.user.id) {
@@ -165,6 +185,12 @@ export default class UserPage extends Component {
 		return state;
 	}
 
+	/**
+	 * Обновляем состояние компонента при изменении инпута
+	 * Если у инпута имя "type" значит это чекбокс и мы в выставляем значения типа пользователя в зависимости от checked
+	 * @param {Event} e
+	 * @private
+	 */
 	_changeInput(e) {
 		let name = e.target.getAttribute('name'),
 			user = this.state.user;
