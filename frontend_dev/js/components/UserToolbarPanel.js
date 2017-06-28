@@ -8,20 +8,26 @@ export default class UserToolbarPanel extends Component {
 		this.state = {
 			current_user: new User()
 		};
+		this._isMount = false;
 		this._getCurrentUser = this._getCurrentUser.bind(this);
+
 	}
 	componentDidMount(){
+		this._isMount  = true;
 		this._getCurrentUser();
 		userModel.on('current-user-change', this._getCurrentUser);
 	}
 	componentWillUnmount(){
+		this._isMount  = false;
 		userModel.off('current-user-change', this._getCurrentUser);
 	}
 	_getCurrentUser() {
 		userModel.getCurrentUser().then((user) => {
-			this.setState({
-				current_user: user
-			});
+			if(this._isMount) {
+				this.setState({
+					current_user: user
+				});
+			}
 		});
 	}
 	click(e) {

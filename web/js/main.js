@@ -18714,19 +18714,23 @@ var UserToolbarPanel = function (_Component) {
 		_this.state = {
 			current_user: new _User2.default()
 		};
+		_this._isMount = false;
 		_this._getCurrentUser = _this._getCurrentUser.bind(_this);
+
 		return _this;
 	}
 
 	(0, _createClass3.default)(UserToolbarPanel, [{
 		key: "componentDidMount",
 		value: function componentDidMount() {
+			this._isMount = true;
 			this._getCurrentUser();
 			_UserModel2.default.on('current-user-change', this._getCurrentUser);
 		}
 	}, {
 		key: "componentWillUnmount",
 		value: function componentWillUnmount() {
+			this._isMount = false;
 			_UserModel2.default.off('current-user-change', this._getCurrentUser);
 		}
 	}, {
@@ -18735,9 +18739,11 @@ var UserToolbarPanel = function (_Component) {
 			var _this2 = this;
 
 			_UserModel2.default.getCurrentUser().then(function (user) {
-				_this2.setState({
-					current_user: user
-				});
+				if (_this2._isMount) {
+					_this2.setState({
+						current_user: user
+					});
+				}
 			});
 		}
 	}, {
@@ -24365,6 +24371,15 @@ var UserPage = function (_Component) {
 				});
 			}
 		}
+
+		/**
+   * Проверяем доступы текущего пользователя
+   * если тикущий пользователь не менеджер то выводим сообщения и редеректим его в корень
+   * Если пользователь менедер и он находиться на своей странице то выводим сообщение об ошибки и редеректим в корень - себя редактировать нельзя
+   * В Ином случае запрашиваем текущего пользователя с сервера
+   * @private
+   */
+
 	}, {
 		key: "_currentUserAccess",
 		value: function _currentUserAccess() {
@@ -24385,6 +24400,17 @@ var UserPage = function (_Component) {
 				}
 			});
 		}
+
+		/**
+   *
+   * Запрашиваем пользователя с сервера
+   * Если результат запроса success то обновляем данные пользователя и стираем сообщения об ошибках
+   * Если же status !== success но code === 200 значит это ошибка валидации и мы выводим ошибки пользователю
+   * В пративном случае это серверная ошибка - сообщение выведеться в модуле api - редирект на главную страницу
+   * @param {Number} id  id пользователя
+   * @private
+   */
+
 	}, {
 		key: "_getUser",
 		value: function _getUser(id) {
@@ -24403,6 +24429,7 @@ var UserPage = function (_Component) {
 
 		/**
    * Обновляем текущий user_id и запрашиваем этого пользователя если новый user_id отличается от текущего
+   * Если новый user_id = 'create' то отчищаем все поля, в обратном случае запрашиваем пользователя с сервера
    * @param nextProps
    * @param nextState
    */
@@ -24446,6 +24473,7 @@ var UserPage = function (_Component) {
 						errors: {}
 					});
 					_Toast2.default.success('User updated');
+					_this5.props.history.push('/list');
 				} else if (data.status === 'error' && data.code === 200) {
 					_this5.setState({
 						errors: data.response
@@ -24468,16 +24496,18 @@ var UserPage = function (_Component) {
 			var _this6 = this;
 
 			_UserModel2.default.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then(function (data) {
-				if (data.status === 'error' && data.code === 200) {
-					_this6.setState({
-						errors: data.response
-					});
-				} else {
+				if (data.status === 'success') {
 					_this6.setState({
 						errors: {}
 					});
 					_this6.props.history.push('/list');
 					_Toast2.default.success('User created');
+				} else if (data.status === 'error' && data.code === 200) {
+					_this6.setState({
+						errors: data.response
+					});
+				} else {
+					_this6.props.history.push('/');
 				}
 			});
 		}
@@ -24588,7 +24618,7 @@ var UserPage = function (_Component) {
 									onChange: this._changeInput.bind(this),
 									required: true,
 									name: "first_name",
-									maxLength: 32,
+									maxLength: 64,
 									label: "First Name",
 									placeholder: "First Name",
 									value: this.state.user.first_name,
@@ -24598,7 +24628,7 @@ var UserPage = function (_Component) {
 									onChange: this._changeInput.bind(this),
 									required: true,
 									name: "last_name",
-									maxLength: 32,
+									maxLength: 64,
 									label: "Last name",
 									placeholder: "Last Name",
 									value: this.state.user.last_name,

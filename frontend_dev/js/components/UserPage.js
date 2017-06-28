@@ -54,6 +54,13 @@ export default class UserPage extends Component {
 		}
 	}
 
+	/**
+	 * Проверяем доступы текущего пользователя
+	 * если тикущий пользователь не менеджер то выводим сообщения и редеректим его в корень
+	 * Если пользователь менедер и он находиться на своей странице то выводим сообщение об ошибки и редеректим в корень - себя редактировать нельзя
+	 * В Ином случае запрашиваем текущего пользователя с сервера
+	 * @private
+	 */
 	_currentUserAccess() {
 		userModel.getCurrentUser().then((current_user) => {
 			if (!current_user.id) {
@@ -72,6 +79,15 @@ export default class UserPage extends Component {
 		});
 	}
 
+	/**
+	 *
+	 * Запрашиваем пользователя с сервера
+	 * Если результат запроса success то обновляем данные пользователя и стираем сообщения об ошибках
+	 * Если же status !== success но code === 200 значит это ошибка валидации и мы выводим ошибки пользователю
+	 * В пративном случае это серверная ошибка - сообщение выведеться в модуле api - редирект на главную страницу
+	 * @param {Number} id  id пользователя
+	 * @private
+	 */
 	_getUser(id) {
 		userModel.get(id).then((data) => {
 			if (data.status === 'success') {
@@ -86,6 +102,7 @@ export default class UserPage extends Component {
 
 	/**
 	 * Обновляем текущий user_id и запрашиваем этого пользователя если новый user_id отличается от текущего
+	 * Если новый user_id = 'create' то отчищаем все поля, в обратном случае запрашиваем пользователя с сервера
 	 * @param nextProps
 	 * @param nextState
 	 */
@@ -123,6 +140,7 @@ export default class UserPage extends Component {
 					errors: {}
 				});
 				toast.success('User updated');
+				this.props.history.push('/list');
 
 			} else if (data.status === 'error' && data.code === 200) {
 				this.setState({
@@ -141,17 +159,22 @@ export default class UserPage extends Component {
 	 */
 	_create(values) {
 		userModel.create(values.first_name, values.last_name, values.username, values.password || null, values.type || null).then((data) => {
-			if (data.status === 'error' && data.code === 200) {
-				this.setState({
-					errors: data.response
-				});
-			} else {
+			if(data.status === 'success'){
 				this.setState({
 					errors: {}
 				});
 				this.props.history.push('/list');
 				toast.success('User created');
+
+			} else if (data.status === 'error' && data.code === 200) {
+				this.setState({
+					errors: data.response
+				});
+			}else{
+				this.props.history.push('/');
 			}
+
+
 		});
 	}
 
@@ -246,7 +269,7 @@ export default class UserPage extends Component {
 								       onChange={this._changeInput.bind(this)}
 								       required
 								       name="first_name"
-								       maxLength={32}
+								       maxLength={64}
 								       label="First Name"
 								       placeholder="First Name"
 								       value={this.state.user.first_name}
@@ -256,7 +279,7 @@ export default class UserPage extends Component {
 								       onChange={this._changeInput.bind(this)}
 								       required
 								       name="last_name"
-								       maxLength={32}
+								       maxLength={64}
 								       label="Last name"
 								       placeholder="Last Name"
 								       value={this.state.user.last_name}
