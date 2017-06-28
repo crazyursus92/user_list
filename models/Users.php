@@ -38,7 +38,7 @@ class Users extends ActiveRecord
         $scenarios = parent::scenarios();
         $scenarios[self::SCENARIO_LOGIN] = ['username', 'password'];
         $scenarios[self::SCENARIO_UPDATE] = ['id', 'username', 'first_name', 'last_name'];
-        $scenarios[self::SCENARIO_CREATE] = [ 'username', 'first_name', 'last_name', 'password'];
+        $scenarios[self::SCENARIO_CREATE] = [ 'username', 'first_name', 'last_name', 'password', 'type'];
         $scenarios[self::SCENARIO_DELETE] = [ 'id'];
         return $scenarios;
     }
@@ -48,6 +48,7 @@ class Users extends ActiveRecord
       return [
           [['username', 'password'], 'required',  'on' => self::SCENARIO_LOGIN],
           [['username', 'first_name', 'last_name', 'password'], 'required',  'on' => self::SCENARIO_CREATE],
+          [['type'], 'default', 'value' => self::TYPE_USER, 'on' => self::SCENARIO_CREATE],
           [['username', 'first_name', 'last_name'], 'filter', 'filter' => 'trim' ,'on' => self::SCENARIO_CREATE],
           ['username', 'unique',  'on' => self::SCENARIO_CREATE],
           [['id', 'username', 'first_name', 'last_name'], 'required',  'on' => self::SCENARIO_UPDATE],
